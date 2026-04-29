@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export function createClient() {
-  const cookieStore = cookies()   // ← This was the problem
+export async function createClient() {
+  const cookieStore = await cookies()   // ← Important: added await
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,7 +18,7 @@ export function createClient() {
               cookieStore.set(name, value, options)
             })
           } catch {
-            // Ignore error in Server Components
+            // The `setAll` method must be implemented, even if it's a no-op
           }
         },
       },
