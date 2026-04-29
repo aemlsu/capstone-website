@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-export function createSupabaseServer() {
-  const cookieStore = cookies()
+export function createClient() {
+  const cookieStore = cookies()   // ← This was the problem
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,11 +14,11 @@ export function createSupabaseServer() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
-            )
+            })
           } catch {
-            // Ignore errors during some rendering contexts (normal with middleware)
+            // Ignore error in Server Components
           }
         },
       },
