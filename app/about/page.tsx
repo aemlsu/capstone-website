@@ -3,7 +3,7 @@ export default function AboutPage() {
     <>
         <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-12">
           
-          <h1 className="text-5xl font-bold text-black mb-2">About AdaptBridge</h1>
+          <h1 className="text-5xl font-bold text-black mb-2">About TPS EduShift Support</h1>
           <p className="text-3xl text-gray-700 mb-12">Teacher Mentorship &amp; Adaptation Platform</p>
 
           <div className="prose text-xl text-gray-800 max-w-none">
