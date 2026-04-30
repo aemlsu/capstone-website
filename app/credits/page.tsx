@@ -88,6 +88,7 @@ export default function CreditsPage() {
           <p className="text-lg leading-relaxed">
             Built by <strong>Mark Samuel M. Suquila, Calyx Zamira Galang Garduque, & Angel Zena Ross Galon</strong> with the assistance of Grok (xAI) as the AI development partner.
           </p>
+             <img src="/images/credits.jpg" alt="The Researchers" />
 
           <div className="text-center mt-16 text-sm text-gray-500 border-t pt-8">
             © 2026 The Philippine School Dubai • Teacher Mentorship &amp; Collaboration Platform<br />
