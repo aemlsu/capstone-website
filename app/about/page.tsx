@@ -46,7 +46,7 @@ export default function AboutPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr><td className="border border-gray-300 px-6 py-4">Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Romel P. Pelayo</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Romel E. Pelayo</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">Vice Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Allan T. Cariaga</td></tr>
               </tbody>
             </table>
