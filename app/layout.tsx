@@ -6,8 +6,8 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AdaptBridge - Teacher Transition Hub",
-  description: "Supporting Filipino teachers in their journey from Philippine to UAE-based teaching approaches",
+  title: "TPS EduShift Support",
+  description: "Teacher Mentorship & Collaboration Platform - The Philippine School",
 };
 
 export default function RootLayout({
