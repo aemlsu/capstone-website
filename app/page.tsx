@@ -6,12 +6,6 @@ import { useRouter } from 'next/navigation';
 export default function HomePage() {
   const router = useRouter();
 
-  useEffect(() => {
-    const accessGranted = localStorage.getItem('accessGranted') === 'true';
-    if (!accessGranted) {
-      router.replace('/password-gate');
-    }
-  }, [router]);
 
   return (
     <div className="min-h-screen relative">
