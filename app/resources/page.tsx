@@ -163,7 +163,7 @@ export default function ResourcesPage() {
               </a>
 
               {/* KHDA Logo */}
-              <a href="https://khda.gov.ae/" target="_blank" rel="noopener noreferrer"
+              <a href="https://khda.gov.ae/en" target="_blank" rel="noopener noreferrer"
                  className="group bg-white/95 backdrop-blur-xl rounded-3xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
                 <img src="/images/khda-logo.png" alt="KHDA" className="h-28 object-contain mb-4" />
                 <p className="font-medium text-black">KHDA - Dubai</p>
