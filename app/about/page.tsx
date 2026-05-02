@@ -48,11 +48,22 @@ export default function AboutPage() {
               <tbody>
                 <tr><td className="border border-gray-300 px-6 py-4">Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Romel P. Pelayo</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">Vice Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Allan T. Cariaga</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoC – Cycles 1 &amp; 2</td><td className="border border-gray-300 px-6 py-4">Ms. Juliet G. Balos</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoC – Cycles 3 &amp; 4</td><td className="border border-gray-300 px-6 py-4">Ms. Marites P. Rodriguez</td></tr>
               </tbody>
             </table>
-
+ {/* KG & Lower Grades */}
+            <h3 className="text-2xl font-semibold text-black mb-4">HoDs</h3>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 px-6 py-4 text-left">Position</th>
+                  <th className="border border-gray-300 px-6 py-4 text-left">Name</th>
+                </tr>
+              </thead>
+              <tbody>
+            <tr><td className="border border-gray-300 px-6 py-4">HoC – Cycles 1 &amp; 2</td><td className="border border-gray-300 px-6 py-4">Ms. Juliet G. Balos</td></tr>
+            <tr><td className="border border-gray-300 px-6 py-4">HoC – Cycles 3 &amp; 4</td><td className="border border-gray-300 px-6 py-4">Ms. Marites P. Rodriguez</td></tr>
+              </tbody>
+            </table>
             {/* KG & Lower Grades */}
             <h3 className="text-2xl font-semibold text-black mb-4">HoD / GLC – Kindergarten &amp; Lower Grades</h3>
             <table className="w-full border-collapse">
