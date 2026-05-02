@@ -8,7 +8,6 @@ export default function HomePage() {
 
   useEffect(() => {
     const accessGranted = localStorage.getItem('accessGranted') === 'true';
-
     if (!accessGranted) {
       router.replace('/password-gate');
     }
@@ -21,14 +20,11 @@ export default function HomePage() {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]"
         style={{ backgroundImage: "url('/images/school-background.jpg')" }}
       />
-      
-      {/* Dark overlay */}
       <div className="fixed inset-0 bg-black/50 z-[-1]" />
 
-      {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col">
 
-        {/* Hero Section (your original beautiful part) */}
+        {/* Hero Section */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <h1 className="text-7xl md:text-8xl font-bold text-white tracking-tighter drop-shadow-2xl mb-4">
             THE PHILIPPINE SCHOOL
@@ -38,16 +34,10 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <a
-              href="/login"
-              className="px-14 py-6 bg-white text-black text-2xl font-semibold rounded-3xl hover:bg-gray-100 transition shadow-2xl"
-            >
+            <a href="/login" className="px-14 py-6 bg-white text-black text-2xl font-semibold rounded-3xl hover:bg-gray-100 transition shadow-2xl">
               Login
             </a>
-            <a
-              href="/signup"
-              className="px-14 py-6 bg-transparent border-4 border-white text-white text-2xl font-semibold rounded-3xl hover:bg-white/10 transition shadow-2xl"
-            >
+            <a href="/signup" className="px-14 py-6 bg-transparent border-4 border-white text-white text-2xl font-semibold rounded-3xl hover:bg-white/10 transition shadow-2xl">
               Create Account
             </a>
           </div>
@@ -57,7 +47,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* === NEW TUTORIAL VIDEO SECTION === */}
+        {/* Tutorial Video Section - YouTube (unlimited size) */}
         <div className="py-20 bg-white/10 backdrop-blur-md border-t border-white/20">
           <div className="max-w-5xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold text-white mb-4">
@@ -67,18 +57,17 @@ export default function HomePage() {
               Watch this short tutorial to get started
             </p>
 
-            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/30 mx-auto max-w-4xl">
-              <video
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full aspect-video bg-black"
-                src="/videos/tutorial.mp4"
-              >
-                Your browser does not support the video tag.
-              </video>
+            <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/30 mx-auto max-w-4xl bg-black">
+              <iframe
+                width="100%"
+                height="640"
+                src="https://www.youtube.com/embed/_EI3gAUTfQk"
+                title="TPS EduShift Support Tutorial"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="aspect-video w-full"
+              ></iframe>
             </div>
 
             <p className="text-white/60 text-sm mt-6">
@@ -86,7 +75,6 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );
