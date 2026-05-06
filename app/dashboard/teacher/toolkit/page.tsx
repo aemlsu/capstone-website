@@ -34,7 +34,7 @@ export default function TransitionToolkit() {
             activeTab === 'assessment' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'
           }`}
         >
-          Self Assessment
+          Monthly Self Assessment
         </button>
       </div>
 
@@ -65,18 +65,18 @@ export default function TransitionToolkit() {
         </div>
       )}
 
-      {/* SELF ASSESSMENT TAB - with instructions added */}
+      {/* MONTHLY SELF ASSESSMENT TAB */}
       {activeTab === 'assessment' && (
         <div className="bg-white rounded-3xl p-10 shadow-xl max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-black mb-4 text-center">Teacher Self-Assessment</h2>
+          <h2 className="text-3xl font-bold text-black mb-4 text-center">Monthly Self Assessment</h2>
           
-          {/* New Instructions */}
+          {/* Instructions */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-10">
             <p className="text-black text-center leading-relaxed">
               Please rate your current confidence level in each area.<br />
               <span className="font-medium">1 = Not confident at all</span> — 
               <span className="font-medium">5 = Extremely confident</span><br />
-              Be honest — this is for your personal growth and development only.
+              This is your <strong>monthly self-assessment</strong> for personal growth and development.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ export default function TransitionToolkit() {
             </div>
 
             <button type="button" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-3xl text-xl font-semibold">
-              Submit Self Assessment
+              Submit Monthly Self Assessment
             </button>
           </form>
         </div>
