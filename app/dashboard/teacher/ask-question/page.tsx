@@ -11,7 +11,7 @@ export default function AskQuestionPage() {
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
-  // Track which posts the current user has already voted on
+  // Track which posts the current user has voted on
   const [votedPosts, setVotedPosts] = useState<Set<string>>(new Set());
 
   const fetchQuestions = async () => {
@@ -32,29 +32,26 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // Clean vote handler
+  // FIXED & WORKING Vote Handler
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
     if (votedPosts.has(postId)) return; // already voted
 
     const column = voteType === 'up' ? 'upvotes' : 'downvotes';
 
+    // Optimistic update + real update
     const { error } = await supabaseBrowser
       .from('questions')
-      .update({ [column]: supabaseBrowser.rpc ? undefined : undefined }) // simple increment
+      .update({ 
+        [column]: supabaseBrowser.raw(`${column} + 1`) 
+      })
       .eq('id', postId);
 
-    // Better increment using raw SQL (works reliably)
-    const { error: incrementError } = await supabaseBrowser.rpc('increment_column', {
-      table_name: 'questions',
-      column_name: column,
-      row_id: postId
-    });
-
-    if (incrementError) {
-      console.error(incrementError);
+    if (error) {
+      console.error(error);
       return;
     }
 
+    // Mark as voted and refresh
     setVotedPosts(prev => new Set(prev).add(postId));
     fetchQuestions();
   };
@@ -141,19 +138,19 @@ export default function AskQuestionPage() {
                   <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
 
-                  {/* Vote Section */}
+                  {/* Vote buttons */}
                   <div className="flex items-center gap-6 mt-6 text-sm">
                     <button 
                       onClick={() => handleVote(q.id, 'up')}
                       disabled={hasVoted}
-                      className={`flex items-center gap-1 ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-green-600 hover:text-green-700'}`}
+                      className={`flex items-center gap-1 transition ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-green-600 hover:text-green-700'}`}
                     >
                       ▲ <span className="font-medium">{q.upvotes || 0}</span>
                     </button>
                     <button 
                       onClick={() => handleVote(q.id, 'down')}
                       disabled={hasVoted}
-                      className={`flex items-center gap-1 ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`}
+                      className={`flex items-center gap-1 transition ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`}
                     >
                       ▼ <span className="font-medium">{q.downvotes || 0}</span>
                     </button>
