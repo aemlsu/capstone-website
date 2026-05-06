@@ -7,7 +7,7 @@ export default function ReflectionsAndConcernsPage() {
   const [activeTab, setActiveTab] = useState<'reflections' | 'concerns'>('reflections');
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newContent, setNewContent] = useState('');
-  const [category, setCategory] = useState('Ap/Esp');
+  const [category, setCategory] = useState('General');   // ← default is now General
 
   const getTableName = () => activeTab;
 
@@ -88,6 +88,7 @@ export default function ReflectionsAndConcernsPage() {
               onChange={(e) => setCategory(e.target.value)}
               className="bg-white text-black px-6 py-3 rounded-3xl border"
             >
+              <option value="General">General</option>
               <option value="Ap/Esp">Ap/Esp</option>
               <option value="Arabic">Arabic</option>
               <option value="English">English</option>
