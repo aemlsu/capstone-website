@@ -51,7 +51,7 @@ export default function AboutPage() {
               </tbody>
             </table>
  {/* KG & Lower Grades */}
-            <h3 className="text-2xl font-semibold text-black mb-4">HoCs</h3>
+            <h3 className="text-2xl font-semibold text-black mb-4">Head of Cycles (HoC)</h3>
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-100">
