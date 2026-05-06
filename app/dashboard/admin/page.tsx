@@ -24,13 +24,14 @@ export default function AdminDashboard() {
 
     let query;
     if (table === 'self_assessments') {
-      // Simplified - no join (this is what was breaking it)
       query = supabaseBrowser.from('self_assessments').select('*');
     } else {
       query = supabaseBrowser.from(table).select('*');
     }
 
-    const { data } = await query.order('created_at', { ascending: false });
+    const { data } = await query
+      .order('is_pinned', { ascending: false })   // ← pinned first
+      .order('created_at', { ascending: false });
     setAllPosts(data || []);
   };
 
@@ -57,6 +58,26 @@ export default function AdminDashboard() {
     if (newSet.has(id)) newSet.delete(id);
     else newSet.add(id);
     setExpandedPosts(newSet);
+  };
+
+  // NEW: Pin / Unpin handler
+  const handlePin = async (id: string) => {
+    const table = getTableName();
+    const post = allPosts.find(p => p.id === id);
+    if (!post) return;
+
+    const newPinned = !post.is_pinned;
+
+    const { error } = await supabaseBrowser
+      .from(table)
+      .update({ is_pinned: newPinned })
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to pin: ' + error.message);
+    } else {
+      fetchPosts();
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -228,7 +249,6 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                // Original code for other tabs (unchanged)
                 filteredMainPosts.map((post) => {
                   const replies = getReplies(post.id);
                   const isExpanded = expandedPosts.has(post.id);
@@ -238,6 +258,7 @@ export default function AdminDashboard() {
                         <td className="p-6 text-black">{new Date(post.created_at).toLocaleDateString()}</td>
                         <td className="p-6 text-black">{post.category}</td>
                         <td className="p-6 text-black">
+                          {post.is_pinned && <span className="text-amber-500 mr-2">📌</span>}
                           <strong>{post.title || 'Untitled'}</strong>
                           <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
                             {post.content}
@@ -254,10 +275,17 @@ export default function AdminDashboard() {
                           <button onClick={() => setReplyingToId(replyingToId === post.id ? null : post.id)} className="text-blue-600 hover:text-blue-700 font-medium">
                             {replyingToId === post.id ? 'Cancel' : 'Reply'}
                           </button>
+                          <button 
+                            onClick={() => handlePin(post.id)}
+                            className={`font-medium ${post.is_pinned ? 'text-amber-500' : 'text-gray-500 hover:text-amber-500'}`}
+                          >
+                            {post.is_pinned ? '📌 Unpin' : '📌 Pin'}
+                          </button>
                           <button onClick={() => handleDelete(post.id)} className="text-red-600 hover:text-red-700">🗑️</button>
                         </td>
                       </tr>
 
+                      {/* Replies section unchanged */}
                       {replies.map((reply) => {
                         const isOwnReply = currentUserId && reply.author_id === currentUserId;
                         const isEditingThisReply = editingReplyId === reply.id;
