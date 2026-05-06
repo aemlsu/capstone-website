@@ -68,7 +68,7 @@ export default function CreditsPage() {
             </p>
             <p>
               To the expert validators: <strong>Ms. Queen Irish C. Alagad</strong>, <strong>Ms. Cathleen L. Castro</strong>,<strong> Ms. Bianca Camille P. Mistal</strong>, 
-              <strong>Ms. Rhea P. Rosete<strong>, and <strong>Ms. Emelita D. Urbano<strong>.
+              <strong>Ms. Rhea P. Rosete</strong>, and <strong>Ms. Emelita D. Urbano</strong>.
             </p>
             <p>
               To the SHS Research Ethics Committee: <strong>Ms. Cathleen L. Castro</strong>, <strong>Ms. Bianca Camille P. Mistal</strong>, and <strong>Ms. Richelle A. Costa</strong>.
