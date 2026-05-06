@@ -49,16 +49,15 @@ export default function TeacherDashboard() {
     };
     fetchMyPosts();
 
-    const fetchOnlineUsers = async () => {
+  const fetchOnlineUsers = async () => {
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
         .eq('role', 'hod')
+        .eq('is_online', true)          // ← Added this to show only actually online HoDs
         .order('full_name');
       setOnlineUsers(data || []);
     };
-    fetchOnlineUsers();
-  }, []);
 
   const handleQuickAsk = async (e: React.FormEvent) => {
     e.preventDefault();
