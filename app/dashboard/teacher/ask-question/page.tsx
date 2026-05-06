@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 
 export default function AskQuestionPage() {
   const router = useRouter();
-  const [questions, setQuestions] = useState<any[]>([]);
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
@@ -27,31 +26,35 @@ export default function AskQuestionPage() {
     fetchQuestions();
   }, []);
 
-  // Main questions only
   const mainQuestions = allPosts.filter((post) => !post.parent_id);
 
   const getReplies = (parentId: string) => {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // ====================== FIXED VOTE HANDLER ======================
+  // Clean vote handler
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
-    if (votedPosts.has(postId)) return; // prevent multiple votes
+    if (votedPosts.has(postId)) return; // already voted
+
+    const column = voteType === 'up' ? 'upvotes' : 'downvotes';
 
     const { error } = await supabaseBrowser
       .from('questions')
-      .update({
-        upvotes: voteType === 'up' ? supabaseBrowser.rpc ? undefined : (await supabaseBrowser.from('questions').select('upvotes').eq('id', postId).single()).data?.upvotes + 1 : undefined,
-        downvotes: voteType === 'down' ? supabaseBrowser.rpc ? undefined : (await supabaseBrowser.from('questions').select('downvotes').eq('id', postId).single()).data?.downvotes + 1 : undefined,
-      })
+      .update({ [column]: supabaseBrowser.rpc ? undefined : undefined }) // simple increment
       .eq('id', postId);
 
-    if (error) {
-      console.error(error);
+    // Better increment using raw SQL (works reliably)
+    const { error: incrementError } = await supabaseBrowser.rpc('increment_column', {
+      table_name: 'questions',
+      column_name: column,
+      row_id: postId
+    });
+
+    if (incrementError) {
+      console.error(incrementError);
       return;
     }
 
-    // Mark as voted
     setVotedPosts(prev => new Set(prev).add(postId));
     fetchQuestions();
   };
@@ -135,11 +138,10 @@ export default function AskQuestionPage() {
 
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
-                  {/* Main Question */}
                   <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
 
-                  {/* Vote buttons */}
+                  {/* Vote Section */}
                   <div className="flex items-center gap-6 mt-6 text-sm">
                     <button 
                       onClick={() => handleVote(q.id, 'up')}
