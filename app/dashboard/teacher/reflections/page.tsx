@@ -5,8 +5,9 @@ import { supabaseBrowser } from '@/lib/supabase';
 
 export default function ReflectionsAndConcernsPage() {
   const [activeTab, setActiveTab] = useState<'reflections' | 'concerns'>('reflections');
-  const [reflectionSubTab, setReflectionSubTab] = useState<'monthly' | 'normal'>('monthly'); // new sub-tab
+  const [reflectionSubTab, setReflectionSubTab] = useState<'monthly' | 'normal'>('monthly');
   const [allPosts, setAllPosts] = useState<any[]>([]);
+  const [newTitle, setNewTitle] = useState('');        // ← NEW
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
@@ -40,6 +41,7 @@ export default function ReflectionsAndConcernsPage() {
     e.preventDefault();
 
     let contentToSave = '';
+    let titleToSave = '';
 
     if (activeTab === 'reflections') {
       if (reflectionSubTab === 'monthly') {
@@ -53,11 +55,15 @@ ${reflectionAnswers.q2 || 'No answer'}
 Q3: What is one goal or area you want to focus on next month?
 ${reflectionAnswers.q3 || 'No answer'}
         `.trim();
+        titleToSave = 'Monthly Reflection';
       } else {
         contentToSave = newContent.trim();
+        titleToSave = newTitle.trim() || 'Reflection';
       }
     } else {
+      // Concerns
       contentToSave = newContent.trim();
+      titleToSave = newTitle.trim() || 'Concern';
     }
 
     if (!contentToSave) return;
@@ -68,9 +74,7 @@ ${reflectionAnswers.q3 || 'No answer'}
     const { error } = await supabaseBrowser
       .from(table)
       .insert({
-        title: activeTab === 'reflections' 
-          ? (reflectionSubTab === 'monthly' ? 'Monthly Reflection' : 'Reflection') 
-          : 'Concern',
+        title: titleToSave,
         content: contentToSave,
         category: category,
         author_id: user?.id,
@@ -78,6 +82,7 @@ ${reflectionAnswers.q3 || 'No answer'}
 
     if (!error) {
       // Reset form
+      setNewTitle('');
       setNewContent('');
       setReflectionAnswers({ q1: '', q2: '', q3: '' });
       fetchPosts();
@@ -107,7 +112,7 @@ ${reflectionAnswers.q3 || 'No answer'}
           </button>
         </div>
 
-        {/* Reflections Sub-Tabs (only when Reflections is active) */}
+        {/* Reflections Sub-Tabs */}
         {activeTab === 'reflections' && (
           <div className="flex border-b mb-8 text-white">
             <button
@@ -128,6 +133,17 @@ ${reflectionAnswers.q3 || 'No answer'}
         {/* Post new form */}
         <form onSubmit={handlePost} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl mb-12">
           
+          {/* Title input - shown for Normal Reflection and Concerns */}
+          {(activeTab === 'concerns' || (activeTab === 'reflections' && reflectionSubTab === 'normal')) && (
+            <input
+              type="text"
+              placeholder="Title (optional)"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              className="w-full p-4 rounded-2xl border mb-6 text-black"
+            />
+          )}
+
           {activeTab === 'reflections' && reflectionSubTab === 'monthly' ? (
             /* Monthly - 3 Guided Questions */
             <div className="space-y-8">
