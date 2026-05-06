@@ -32,7 +32,7 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // Clean & working vote handler
+  // Clean & type-safe vote handler
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
     if (votedPosts.has(postId)) return;
 
