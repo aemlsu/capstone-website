@@ -61,7 +61,7 @@ export default function CreditsPage() {
               To <strong>Ms. Bianca Camille P. Mistal</strong> (Capstone Teacher) and <strong>Renato A. Dela Peña Jr., M.A.</strong> for their mentorship, 
               patience, and continuous support during the entire research process.
             </p>
-                To <strong>Sir Sean Buscano</strong>
+                To <strong>Mr. Sean Buscano</strong>
             <p></p>
             <p>
             </p>
