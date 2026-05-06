@@ -11,7 +11,7 @@ export default function AskQuestionPage() {
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
-  // Track which posts the current user has voted on
+  // Track which posts the current user has already voted on
   const [votedPosts, setVotedPosts] = useState<Set<string>>(new Set());
 
   const fetchQuestions = async () => {
@@ -34,16 +34,24 @@ export default function AskQuestionPage() {
 
   // FIXED & WORKING Vote Handler
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
-    if (votedPosts.has(postId)) return; // already voted
+    if (votedPosts.has(postId)) return; // user can only vote once
 
     const column = voteType === 'up' ? 'upvotes' : 'downvotes';
 
-    // Optimistic update + real update
+    // Get current value
+    const { data: current } = await supabaseBrowser
+      .from('questions')
+      .select(column)
+      .eq('id', postId)
+      .single();
+
+    const currentValue = current?.[column] || 0;
+    const newValue = currentValue + 1;
+
+    // Update
     const { error } = await supabaseBrowser
       .from('questions')
-      .update({ 
-        [column]: supabaseBrowser.raw(`${column} + 1`) 
-      })
+      .update({ [column]: newValue })
       .eq('id', postId);
 
     if (error) {
@@ -51,7 +59,7 @@ export default function AskQuestionPage() {
       return;
     }
 
-    // Mark as voted and refresh
+    // Mark as voted and refresh UI
     setVotedPosts(prev => new Set(prev).add(postId));
     fetchQuestions();
   };
@@ -138,7 +146,7 @@ export default function AskQuestionPage() {
                   <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
 
-                  {/* Vote buttons */}
+                  {/* Vote Section */}
                   <div className="flex items-center gap-6 mt-6 text-sm">
                     <button 
                       onClick={() => handleVote(q.id, 'up')}
