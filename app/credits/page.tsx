@@ -50,24 +50,21 @@ export default function CreditsPage() {
           <h2 className="text-3xl font-semibold mb-6">Special Thanks</h2>
           <div className="text-lg leading-relaxed space-y-6">
             <p>
-            We would like to express our deepest gratitude to The Philippine School Dubai administration for their full support in making this research possible. 
-              We are deeply grateful to our <strong>Principal, Dr. Rommel E. Pelayo</strong>, and our <strong>Vice Principal, Dr. Allan T. Cariaga</strong>, for their continuous guidance, trust, and encouragement throughout this research journey
-
+              We would like to express our deepest gratitude to The Philippine School Dubai administration for their full support in making this research possible. 
+              We are deeply grateful to our <strong>Principal, Dr. Rommel E. Pelayo</strong>, and our <strong>Vice Principal, Dr. Allan T. Cariaga</strong>, for their continuous guidance, trust, and encouragement throughout this research journey.
             </p>
             <p>
-          
               To <strong>Ms. Bianca Camille P. Mistal</strong> (Capstone Teacher) and <strong>Renato A. Dela Peña Jr., M.A.</strong> for their mentorship, 
               patience, and continuous support during the entire research process.
             </p>
-                To <strong>Mr. Sean Buscano</strong>, for his invaluable technical assistance in building and developing this website.
-          <p></p>
             <p>
+              To <strong>Mr. Sean Buscano</strong>, for his invaluable technical assistance in building and developing this website.
             </p>
             <p>
               To <strong>Mr. Michael Aniag</strong> (Librarian) for providing a comfortable space for the interviews.
             </p>
             <p>
-              To the expert validators: <strong>Ms. Queen Irish C. Alagad</strong>, <strong>Ms. Cathleen L. Castro</strong>,<strong> Ms. Bianca Camille P. Mistal</strong>, 
+              To the expert validators: <strong>Ms. Queen Irish C. Alagad</strong>, <strong>Ms. Cathleen L. Castro</strong>, <strong>Ms. Bianca Camille P. Mistal</strong>, 
               <strong>Ms. Rhea P. Rosete</strong>, and <strong>Ms. Emelita D. Urbano</strong>.
             </p>
             <p>
@@ -84,9 +81,24 @@ export default function CreditsPage() {
 
           <h2 className="text-3xl font-semibold mt-12 mb-6">Website Development</h2>
           <p className="text-lg leading-relaxed">
-            Built by <strong>Mark Samuel M. Suquila, Calyx Zamira G. Garduque, & Angel Zena Ross D. Galon</strong> with the assistance of Grok (xAI) as the AI development partner.
+            Built by <strong>Mark Samuel M. Suquila, Calyx Zamira G. Garduque, &amp; Angel Zena Ross D. Galon</strong> with the assistance of Grok (xAI) as the AI development partner.
           </p>
-             <img src="/images/credits.jpg" alt="The Researchers" />
+          <img src="/images/credits.jpg" alt="The Researchers" className="mx-auto mt-8 rounded-2xl" />
+
+          {/* NEW: Thesis Download Section */}
+          <div className="mt-16 bg-blue-50 border border-blue-200 rounded-3xl p-10 text-center">
+            <h2 className="text-3xl font-semibold mb-4 text-black">Full Thesis Manuscript</h2>
+            <p className="text-gray-600 mb-8">
+              12A-Gp1-Garduque-et-al.-2025-2026-Thesis-Manuscript-ver10-Calyx.pdf
+            </p>
+            <a
+              href="/thesis.pdf"
+              download="TPS-EduShift-Support-Thesis-Manuscript.pdf"
+              className="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-3xl text-xl font-medium transition"
+            >
+              📥 Download Full Thesis PDF
+            </a>
+          </div>
 
           <div className="text-center mt-16 text-sm text-gray-500 border-t pt-8">
             © 2026 The Philippine School Dubai • Teacher Mentorship &amp; Collaboration Platform<br />
