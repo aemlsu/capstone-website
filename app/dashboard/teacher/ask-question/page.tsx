@@ -30,6 +30,7 @@ export default function AskQuestionPage() {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
       setCurrentUserId(user?.id || null);
+      console.log('Current User ID:', user?.id);   // ← Debug log
     };
     getCurrentUser();
     fetchQuestions();
@@ -41,6 +42,26 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
+  // Delete with full error reporting
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this question permanently?')) return;
+
+    console.log('Attempting to delete post ID:', id);
+
+    const { error } = await supabaseBrowser
+      .from('questions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Delete Error:', error);
+      alert('DELETE FAILED\n\nError: ' + error.message + '\n\nCheck console for details');
+    } else {
+      alert('✅ Question deleted successfully');
+      fetchQuestions();
+    }
+  };
+
   // Start editing
   const startEdit = (post: any) => {
     setEditingId(post.id);
@@ -49,9 +70,11 @@ export default function AskQuestionPage() {
     setEditCategory(post.category || 'General');
   };
 
-  // Save edit
+  // Save edit with full error reporting
   const saveEdit = async () => {
     if (!editingId) return;
+
+    console.log('Attempting to update post ID:', editingId);
 
     const { error } = await supabaseBrowser
       .from('questions')
@@ -63,32 +86,17 @@ export default function AskQuestionPage() {
       .eq('id', editingId);
 
     if (error) {
-      alert('Failed to update: ' + error.message);
+      console.error('Update Error:', error);
+      alert('UPDATE FAILED\n\nError: ' + error.message + '\n\nCheck console for details');
     } else {
-      setEditingId(null);     // exit edit mode
-      fetchQuestions();       // refresh list
+      alert('✅ Changes saved successfully');
+      setEditingId(null);
+      fetchQuestions();
     }
   };
 
-  // Cancel edit
   const cancelEdit = () => {
     setEditingId(null);
-  };
-
-  // Delete own post
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this question permanently?')) return;
-
-    const { error } = await supabaseBrowser
-      .from('questions')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      alert('Failed to delete: ' + error.message);
-    } else {
-      fetchQuestions();       // refresh list
-    }
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -172,7 +180,6 @@ export default function AskQuestionPage() {
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
                   {isEditing ? (
-                    // Edit Mode
                     <div>
                       <input
                         type="text"
@@ -212,7 +219,6 @@ export default function AskQuestionPage() {
                       </div>
                     </div>
                   ) : (
-                    // Normal view
                     <>
                       <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
