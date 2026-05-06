@@ -12,6 +12,9 @@ export default function AskQuestionPage() {
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
+  // Track which posts the current user has already voted on
+  const [votedPosts, setVotedPosts] = useState<Set<string>>(new Set());
+
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
       .from('questions')
@@ -31,21 +34,26 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // ====================== VOTE HANDLER ======================
+  // ====================== FIXED VOTE HANDLER ======================
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
-    const { data: { user } } = await supabaseBrowser.auth.getUser();
-    if (!user) return alert('Please log in to vote');
+    if (votedPosts.has(postId)) return; // prevent multiple votes
 
-    // Simple vote logic (toggle up/down, prevent multiple votes)
     const { error } = await supabaseBrowser
       .from('questions')
       .update({
-        upvotes: voteType === 'up' ? (supabaseBrowser.rpc ? await supabaseBrowser.rpc('increment_votes', { row_id: postId, col: 'upvotes' }) : 0) : undefined,
-        downvotes: voteType === 'down' ? (supabaseBrowser.rpc ? await supabaseBrowser.rpc('increment_votes', { row_id: postId, col: 'downvotes' }) : 0) : undefined,
+        upvotes: voteType === 'up' ? supabaseBrowser.rpc ? undefined : (await supabaseBrowser.from('questions').select('upvotes').eq('id', postId).single()).data?.upvotes + 1 : undefined,
+        downvotes: voteType === 'down' ? supabaseBrowser.rpc ? undefined : (await supabaseBrowser.from('questions').select('downvotes').eq('id', postId).single()).data?.downvotes + 1 : undefined,
       })
       .eq('id', postId);
 
-    if (!error) fetchQuestions();
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    // Mark as voted
+    setVotedPosts(prev => new Set(prev).add(postId));
+    fetchQuestions();
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -123,6 +131,8 @@ export default function AskQuestionPage() {
           ) : (
             mainQuestions.map((q) => {
               const replies = getReplies(q.id);
+              const hasVoted = votedPosts.has(q.id);
+
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
                   {/* Main Question */}
@@ -133,13 +143,15 @@ export default function AskQuestionPage() {
                   <div className="flex items-center gap-6 mt-6 text-sm">
                     <button 
                       onClick={() => handleVote(q.id, 'up')}
-                      className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                      disabled={hasVoted}
+                      className={`flex items-center gap-1 ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-green-600 hover:text-green-700'}`}
                     >
                       ▲ <span className="font-medium">{q.upvotes || 0}</span>
                     </button>
                     <button 
                       onClick={() => handleVote(q.id, 'down')}
-                      className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                      disabled={hasVoted}
+                      className={`flex items-center gap-1 ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`}
                     >
                       ▼ <span className="font-medium">{q.downvotes || 0}</span>
                     </button>
