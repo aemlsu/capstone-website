@@ -11,7 +11,10 @@ export default function ReflectionsAndConcernsPage() {
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
-  // NEW: Current user + Edit mode
+  // NEW: Month selector for Monthly Reflection
+  const [selectedMonth, setSelectedMonth] = useState('September');
+
+  // Current user + Edit mode
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -48,7 +51,6 @@ export default function ReflectionsAndConcernsPage() {
 
   const getReplies = (parentId: string) => allPosts.filter((p) => p.parent_id === parentId);
 
-  // NEW: Edit functions
   const startEdit = (post: any) => {
     setEditingId(post.id);
     setEditTitle(post.title || '');
@@ -57,39 +59,30 @@ export default function ReflectionsAndConcernsPage() {
 
   const saveEdit = async () => {
     if (!editingId) return;
-
     const table = getTableName();
     const { error } = await supabaseBrowser
       .from(table)
       .update({
-        title: editTitle || (activeTab === 'reflections' ? 'Reflection' : 'Concern'),
+        title: editTitle,
         content: editContent,
       })
       .eq('id', editingId);
-
-    if (error) {
-      alert('Failed to update: ' + error.message);
-    } else {
+    if (error) alert('Failed to update: ' + error.message);
+    else {
       alert('✅ Updated successfully');
       setEditingId(null);
       fetchPosts();
     }
   };
 
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
+  const cancelEdit = () => setEditingId(null);
 
-  // NEW: Delete function
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
-
     const table = getTableName();
     const { error } = await supabaseBrowser.from(table).delete().eq('id', id);
-
-    if (error) {
-      alert('Failed to delete: ' + error.message);
-    } else {
+    if (error) alert('Failed to delete: ' + error.message);
+    else {
       alert('✅ Post deleted successfully');
       fetchPosts();
     }
@@ -104,6 +97,8 @@ export default function ReflectionsAndConcernsPage() {
     if (activeTab === 'reflections') {
       if (reflectionSubTab === 'monthly') {
         contentToSave = `
+Month: ${selectedMonth}
+
 Q1: What successes or positive experiences did you have this month?
 ${reflectionAnswers.q1 || 'No answer'}
 
@@ -113,7 +108,7 @@ ${reflectionAnswers.q2 || 'No answer'}
 Q3: What is one goal or area you want to focus on next month?
 ${reflectionAnswers.q3 || 'No answer'}
         `.trim();
-        titleToSave = 'Monthly Reflection';
+        titleToSave = `Monthly Reflection - ${selectedMonth}`;
       } else {
         contentToSave = newContent.trim();
         titleToSave = newTitle.trim() || 'Reflection';
@@ -143,6 +138,7 @@ ${reflectionAnswers.q3 || 'No answer'}
         content: contentToSave,
         category: category,
         author_id: user.id,
+        month: reflectionSubTab === 'monthly' ? selectedMonth : null,   // save month only for monthly
       });
 
     if (error) {
@@ -200,6 +196,30 @@ ${reflectionAnswers.q3 || 'No answer'}
         {/* Post new form */}
         <form onSubmit={handlePost} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl mb-12">
           
+          {/* Month selector - only for Monthly Reflection */}
+          {activeTab === 'reflections' && reflectionSubTab === 'monthly' && (
+            <div className="mb-6">
+              <label className="block text-black font-medium mb-2">Month of Reflection</label>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="w-full p-4 rounded-2xl border text-black"
+              >
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+              </select>
+            </div>
+          )}
+
           {/* Title input - shown for Normal Reflection and Concerns */}
           {(activeTab === 'concerns' || (activeTab === 'reflections' && reflectionSubTab === 'normal')) && (
             <input
@@ -280,7 +300,6 @@ ${reflectionAnswers.q3 || 'No answer'}
               return (
                 <div key={post.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
                   {isEditing ? (
-                    /* Edit Mode */
                     <div>
                       <input
                         type="text"
@@ -301,11 +320,11 @@ ${reflectionAnswers.q3 || 'No answer'}
                       </div>
                     </div>
                   ) : (
-                    /* Normal View */
                     <>
                       <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-semibold text-black">
                           {post.title || (activeTab === 'reflections' ? 'Reflection' : 'Concern')}
+                          {post.month && <span className="text-blue-600 ml-3 text-lg">({post.month})</span>}
                         </h3>
                         {isOwnPost && (
                           <div className="flex gap-3">
@@ -321,7 +340,6 @@ ${reflectionAnswers.q3 || 'No answer'}
                     </>
                   )}
 
-                  {/* Replies */}
                   {replies.length > 0 && (
                     <div className="mt-10 space-y-6">
                       {replies.map((reply) => (
