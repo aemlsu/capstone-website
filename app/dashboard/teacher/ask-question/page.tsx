@@ -12,6 +12,12 @@ export default function AskQuestionPage() {
   const [category, setCategory] = useState('General');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // Edit mode
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState('General');
+
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
       .from('questions')
@@ -35,7 +41,41 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // Delete handler - only own posts
+  // Start editing
+  const startEdit = (post: any) => {
+    setEditingId(post.id);
+    setEditTitle(post.title || '');
+    setEditContent(post.content || '');
+    setEditCategory(post.category || 'General');
+  };
+
+  // Save edited post
+  const saveEdit = async () => {
+    if (!editingId) return;
+
+    const { error } = await supabaseBrowser
+      .from('questions')
+      .update({
+        title: editTitle || 'Untitled Question',
+        content: editContent,
+        category: editCategory,
+      })
+      .eq('id', editingId);
+
+    if (!error) {
+      setEditingId(null);
+      fetchQuestions();
+    } else {
+      alert('Failed to update: ' + error.message);
+    }
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  // Delete own post
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this question permanently?')) return;
 
@@ -44,11 +84,7 @@ export default function AskQuestionPage() {
       .delete()
       .eq('id', id);
 
-    if (error) {
-      alert('Failed to delete: ' + error.message);
-    } else {
-      fetchQuestions();
-    }
+    if (!error) fetchQuestions();
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -127,25 +163,68 @@ export default function AskQuestionPage() {
             mainQuestions.map((q) => {
               const replies = getReplies(q.id);
               const isOwnPost = currentUserId && q.author_id === currentUserId;
+              const isEditing = editingId === q.id;
 
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
-                  {/* Main Question */}
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
-                    {isOwnPost && (
-                      <button
-                        onClick={() => handleDelete(q.id)}
-                        className="text-red-600 hover:text-red-700 text-xl"
+                  {isEditing ? (
+                    /* Edit Mode */
+                    <div>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="w-full p-4 rounded-2xl border mb-4 text-black"
+                        placeholder="Question title"
+                      />
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={4}
+                        className="w-full p-4 rounded-2xl border text-black mb-4"
+                      />
+                      <select
+                        value={editCategory}
+                        onChange={(e) => setEditCategory(e.target.value)}
+                        className="bg-white text-black px-6 py-3 rounded-3xl border mb-4"
                       >
-                        🗑️
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
-                  <p className="text-xs text-gray-500 mt-6">
-                    Posted in <span className="font-medium">{q.category}</span>
-                  </p>
+                        <option value="General">General</option>
+                        <option value="Ap/Esp">Ap/Esp</option>
+                        <option value="Arabic">Arabic</option>
+                        <option value="English">English</option>
+                        <option value="Filipino">Filipino</option>
+                        <option value="ICT/TLE">ICT/TLE</option>
+                        <option value="MAPEH">MAPEH</option>
+                        <option value="Math">Math</option>
+                        <option value="MSCS">MSCS</option>
+                        <option value="Science">Science</option>
+                        <option value="KG">KG</option>
+                        <option value="G1 & G2">G1 & G2</option>
+                      </select>
+
+                      <div className="flex gap-4">
+                        <button onClick={saveEdit} className="bg-green-600 text-white px-6 py-3 rounded-3xl">Save Changes</button>
+                        <button onClick={cancelEdit} className="bg-gray-500 text-white px-6 py-3 rounded-3xl">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Normal View */
+                    <>
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
+                        {isOwnPost && (
+                          <div className="flex gap-3">
+                            <button onClick={() => startEdit(q)} className="text-blue-600 hover:text-blue-700">✏️ Edit</button>
+                            <button onClick={() => handleDelete(q.id)} className="text-red-600 hover:text-red-700">🗑️</button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
+                      <p className="text-xs text-gray-500 mt-6">
+                        Posted in <span className="font-medium">{q.category}</span>
+                      </p>
+                    </>
+                  )}
 
                   {/* Replies */}
                   {replies.length > 0 && (
