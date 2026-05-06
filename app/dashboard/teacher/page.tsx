@@ -49,12 +49,12 @@ export default function TeacherDashboard() {
     };
     fetchMyPosts();
 
-    // FIXED: Now properly called + removed non-existent is_online filter
+    // FIXED: Now shows both 'hod' and 'HoD' (your database has mixed casing)
     const fetchOnlineUsers = async () => {
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
-        .eq('role', 'hod')
+        .in('role', ['hod', 'HoD'])   // ← This is the only line that changed
         .order('full_name');
       setOnlineUsers(data || []);
     };
