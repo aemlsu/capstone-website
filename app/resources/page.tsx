@@ -15,6 +15,14 @@ export default function ResourcesPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [uploadCategory, setUploadCategory] = useState('General');
 
+  // NEW: Helper to clean file names (fixes your upload error)
+  const sanitizeFileName = (name: string): string => {
+    return `${Date.now()}-${name
+      .replace(/[^a-zA-Z0-9.-]/g, '_')   // replace spaces & special chars with _
+      .replace(/_{2,}/g, '_')            // remove duplicate underscores
+      .replace(/^_|_$/g, '')}`;          // remove leading/trailing _
+  };
+
   const loadRole = async () => {
     const { data: { user } } = await supabaseBrowser.auth.getUser();
     if (user) {
@@ -45,11 +53,13 @@ export default function ResourcesPage() {
     if (!file || !isHoDOrAdmin) return;
 
     setUploading(true);
-    const fileName = `${Date.now()}-${file.name}`;
+
+    // Clean the file name so Supabase accepts it
+    const safeFileName = sanitizeFileName(file.name);
 
     const { error: uploadError } = await supabaseBrowser.storage
       .from('resources')
-      .upload(fileName, file);
+      .upload(safeFileName, file);
 
     if (uploadError) {
       alert('Upload failed: ' + uploadError.message);
@@ -65,9 +75,9 @@ export default function ResourcesPage() {
     await supabaseBrowser
       .from('resources')
       .insert({
-        title: file.name,
+        title: file.name,           // keep original name for display
         name: file.name,
-        file_path: fileName,
+        file_path: safeFileName,    // use the safe name in storage
         category: category
       });
 
@@ -259,7 +269,7 @@ export default function ResourcesPage() {
                   <a href="https://padlet.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
                     <img src="/images/padlet.png" alt="Padlet" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">Padlet</h3>
-                    <p className="text-gray-600 mt-3">Collaborative bulletin boards.</p>
+                    <p className="text-gray-600 mt-3">Collaborative digital bulletin boards.</p>
                   </a>
                   <a href="https://scratch.mit.edu" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
                     <img src="/images/scratch.png" alt="Scratch" className="w-28 h-28 object-contain mb-6" />
