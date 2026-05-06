@@ -32,28 +32,33 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // FIXED: Clean, type-safe vote handler
+  // Clean & working vote handler
   const handleVote = async (postId: string, voteType: 'up' | 'down') => {
     if (votedPosts.has(postId)) return;
 
     const column = voteType === 'up' ? 'upvotes' : 'downvotes';
 
+    // Get current value
+    const { data: current } = await supabaseBrowser
+      .from('questions')
+      .select(column)
+      .eq('id', postId)
+      .single();
+
+    const currentValue = current?.[column] || 0;
+
+    // Increment
     const { error } = await supabaseBrowser
       .from('questions')
-      .update({ [column]: supabaseBrowser.rpc ? undefined : undefined }) // dummy for type
+      .update({ [column]: currentValue + 1 })
       .eq('id', postId);
 
-    // Real increment
-    const { error: incError } = await supabaseBrowser
-      .from('questions')
-      .update({ [column]: (await supabaseBrowser.from('questions').select(column).eq('id', postId).single()).data?.[column] + 1 || 1 })
-      .eq('id', postId);
-
-    if (incError) {
-      console.error(incError);
+    if (error) {
+      console.error(error);
       return;
     }
 
+    // Mark as voted and refresh
     setVotedPosts(prev => new Set(prev).add(postId));
     fetchQuestions();
   };
