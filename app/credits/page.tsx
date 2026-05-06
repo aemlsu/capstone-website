@@ -87,7 +87,7 @@ export default function CreditsPage() {
 
           {/* NEW: Thesis Download Section */}
           <div className="mt-16 bg-blue-50 border border-blue-200 rounded-3xl p-10 text-center">
-            <h2 className="text-3xl font-semibold mb-4 text-black">Full Thesis Manuscript</h2>
+            <h2 className="text-3xl font-semibold mb-4 text-black"> Thesis </h2>
             <p className="text-gray-600 mb-8">
               12A-Gp1-Garduque-et-al.-2025-2026.pdf
             </p>
