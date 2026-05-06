@@ -5,9 +5,17 @@ import { supabaseBrowser } from '@/lib/supabase';
 
 export default function ReflectionsAndConcernsPage() {
   const [activeTab, setActiveTab] = useState<'reflections' | 'concerns'>('reflections');
+  const [reflectionSubTab, setReflectionSubTab] = useState<'monthly' | 'normal'>('monthly'); // new sub-tab
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newContent, setNewContent] = useState('');
-  const [category, setCategory] = useState('General');   // ← default is now General
+  const [category, setCategory] = useState('General');
+
+  // Monthly reflection answers
+  const [reflectionAnswers, setReflectionAnswers] = useState({
+    q1: '',
+    q2: '',
+    q3: ''
+  });
 
   const getTableName = () => activeTab;
 
@@ -30,7 +38,29 @@ export default function ReflectionsAndConcernsPage() {
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newContent.trim()) return;
+
+    let contentToSave = '';
+
+    if (activeTab === 'reflections') {
+      if (reflectionSubTab === 'monthly') {
+        contentToSave = `
+Q1: What successes or positive experiences did you have this month?
+${reflectionAnswers.q1 || 'No answer'}
+
+Q2: What challenges or difficulties did you face?
+${reflectionAnswers.q2 || 'No answer'}
+
+Q3: What is one goal or area you want to focus on next month?
+${reflectionAnswers.q3 || 'No answer'}
+        `.trim();
+      } else {
+        contentToSave = newContent.trim();
+      }
+    } else {
+      contentToSave = newContent.trim();
+    }
+
+    if (!contentToSave) return;
 
     const { data: { user } } = await supabaseBrowser.auth.getUser();
     const table = getTableName();
@@ -38,14 +68,18 @@ export default function ReflectionsAndConcernsPage() {
     const { error } = await supabaseBrowser
       .from(table)
       .insert({
-        title: activeTab === 'reflections' ? 'Reflection' : 'Concern',
-        content: newContent,
+        title: activeTab === 'reflections' 
+          ? (reflectionSubTab === 'monthly' ? 'Monthly Reflection' : 'Reflection') 
+          : 'Concern',
+        content: contentToSave,
         category: category,
         author_id: user?.id,
       });
 
     if (!error) {
+      // Reset form
       setNewContent('');
+      setReflectionAnswers({ q1: '', q2: '', q3: '' });
       fetchPosts();
     }
   };
@@ -57,7 +91,7 @@ export default function ReflectionsAndConcernsPage() {
           {activeTab === 'reflections' ? 'Recent Reflections' : 'Recent Concerns'}
         </h1>
 
-        {/* Tabs */}
+        {/* Main Tabs */}
         <div className="flex border-b mb-8 text-white">
           <button
             onClick={() => { setActiveTab('reflections'); }}
@@ -73,16 +107,55 @@ export default function ReflectionsAndConcernsPage() {
           </button>
         </div>
 
+        {/* Reflections Sub-Tabs (only when Reflections is active) */}
+        {activeTab === 'reflections' && (
+          <div className="flex border-b mb-8 text-white">
+            <button
+              onClick={() => setReflectionSubTab('monthly')}
+              className={`px-8 py-4 text-lg font-medium ${reflectionSubTab === 'monthly' ? 'border-b-4 border-blue-600' : 'opacity-70'}`}
+            >
+              Monthly Reflection
+            </button>
+            <button
+              onClick={() => setReflectionSubTab('normal')}
+              className={`px-8 py-4 text-lg font-medium ${reflectionSubTab === 'normal' ? 'border-b-4 border-blue-600' : 'opacity-70'}`}
+            >
+              Normal Reflection
+            </button>
+          </div>
+        )}
+
         {/* Post new form */}
         <form onSubmit={handlePost} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl mb-12">
-          <textarea
-            placeholder={activeTab === 'reflections' ? "Share your reflection here..." : "Share your concern here..."}
-            value={newContent}
-            onChange={(e) => setNewContent(e.target.value)}
-            rows={4}
-            className="w-full p-4 rounded-2xl border text-black mb-6"
-          />
-          <div className="flex gap-4 items-center">
+          
+          {activeTab === 'reflections' && reflectionSubTab === 'monthly' ? (
+            /* Monthly - 3 Guided Questions */
+            <div className="space-y-8">
+              <div>
+                <label className="block text-black font-medium mb-2">1. What successes or positive experiences did you have this month?</label>
+                <textarea value={reflectionAnswers.q1} onChange={(e) => setReflectionAnswers(prev => ({ ...prev, q1: e.target.value }))} rows={3} className="w-full p-4 rounded-2xl border text-black" placeholder="Share your successes..." />
+              </div>
+              <div>
+                <label className="block text-black font-medium mb-2">2. What challenges or difficulties did you face?</label>
+                <textarea value={reflectionAnswers.q2} onChange={(e) => setReflectionAnswers(prev => ({ ...prev, q2: e.target.value }))} rows={3} className="w-full p-4 rounded-2xl border text-black" placeholder="Share your challenges..." />
+              </div>
+              <div>
+                <label className="block text-black font-medium mb-2">3. What is one goal or area you want to focus on next month?</label>
+                <textarea value={reflectionAnswers.q3} onChange={(e) => setReflectionAnswers(prev => ({ ...prev, q3: e.target.value }))} rows={3} className="w-full p-4 rounded-2xl border text-black" placeholder="Share your goal..." />
+              </div>
+            </div>
+          ) : (
+            /* Normal Reflection or Concern - free text */
+            <textarea
+              placeholder={activeTab === 'reflections' ? "Share your reflection here..." : "Share your concern here..."}
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+              rows={4}
+              className="w-full p-4 rounded-2xl border text-black mb-6"
+            />
+          )}
+
+          <div className="flex gap-4 items-center mt-8">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -102,7 +175,9 @@ export default function ReflectionsAndConcernsPage() {
               <option value="G1 & G2">G1 & G2</option>
             </select>
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-3xl font-medium">
-              {activeTab === 'reflections' ? 'Post Reflection' : 'Post Concern'}
+              {activeTab === 'reflections' 
+                ? (reflectionSubTab === 'monthly' ? 'Post Monthly Reflection' : 'Post Reflection')
+                : 'Post Concern'}
             </button>
           </div>
         </form>
@@ -121,12 +196,11 @@ export default function ReflectionsAndConcernsPage() {
                   <h3 className="text-2xl font-semibold text-black">
                     {post.title || (activeTab === 'reflections' ? 'Reflection' : 'Concern')}
                   </h3>
-                  <p className="text-gray-900 mt-3 text-[17px]">{post.content}</p>
+                  <p className="text-gray-900 mt-3 text-[17px] whitespace-pre-line">{post.content}</p>
                   <p className="text-xs text-gray-500 mt-6">
                     Posted in <span className="font-medium">{post.category}</span>
                   </p>
 
-                  {/* Replies */}
                   {replies.length > 0 && (
                     <div className="mt-10 space-y-6">
                       {replies.map((reply) => (
