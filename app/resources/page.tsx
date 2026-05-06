@@ -18,9 +18,9 @@ export default function ResourcesPage() {
   // NEW: Helper to clean file names (fixes your upload error)
   const sanitizeFileName = (name: string): string => {
     return `${Date.now()}-${name
-      .replace(/[^a-zA-Z0-9.-]/g, '_')   // replace spaces & special chars with _
-      .replace(/_{2,}/g, '_')            // remove duplicate underscores
-      .replace(/^_|_$/g, '')}`;          // remove leading/trailing _
+      .replace(/[^a-zA-Z0-9.-]/g, '_')
+      .replace(/_{2,}/g, '_')
+      .replace(/^_|_$/g, '')}`;
   };
 
   const loadRole = async () => {
@@ -54,7 +54,6 @@ export default function ResourcesPage() {
 
     setUploading(true);
 
-    // Clean the file name so Supabase accepts it
     const safeFileName = sanitizeFileName(file.name);
 
     const { error: uploadError } = await supabaseBrowser.storage
@@ -75,9 +74,9 @@ export default function ResourcesPage() {
     await supabaseBrowser
       .from('resources')
       .insert({
-        title: file.name,           // keep original name for display
+        title: file.name,
         name: file.name,
-        file_path: safeFileName,    // use the safe name in storage
+        file_path: safeFileName,
         category: category
       });
 
@@ -142,6 +141,15 @@ export default function ResourcesPage() {
             Official Documents
           </button>
         </div>
+
+        {/* NEW INSTRUCTIONS - only shown in Resources tab */}
+        {activeTab === 'resources' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-3xl p-6 mb-8">
+            <p className="text-black text-center leading-relaxed text-lg">
+              This section provides you with research-based materials that you can read anytime to support and improve your teaching practices and professional growth.
+            </p>
+          </div>
+        )}
 
         {/* Upload Button */}
         {isHoDOrAdmin && activeTab === 'resources' && (
