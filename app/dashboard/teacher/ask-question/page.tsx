@@ -6,13 +6,11 @@ import { useRouter } from 'next/navigation';
 
 export default function AskQuestionPage() {
   const router = useRouter();
+  const [questions, setQuestions] = useState<any[]>([]);
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [category, setCategory] = useState('General');
-
-  // Track which posts the current user has already voted on
-  const [votedPosts, setVotedPosts] = useState<Set<string>>(new Set());
+  const [category, setCategory] = useState('General');   // ← default is now General
 
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
@@ -26,41 +24,11 @@ export default function AskQuestionPage() {
     fetchQuestions();
   }, []);
 
+  // Main questions only
   const mainQuestions = allPosts.filter((post) => !post.parent_id);
 
   const getReplies = (parentId: string) => {
     return allPosts.filter((p) => p.parent_id === parentId);
-  };
-
-  // Clean & type-safe vote handler
-  const handleVote = async (postId: string, voteType: 'up' | 'down') => {
-    if (votedPosts.has(postId)) return;
-
-    const column = voteType === 'up' ? 'upvotes' : 'downvotes';
-
-    // Get current value
-    const { data: current } = await supabaseBrowser
-      .from('questions')
-      .select(column)
-      .eq('id', postId)
-      .single();
-
-    const currentValue = current?.[column] || 0;
-
-    // Increment
-    const { error } = await supabaseBrowser
-      .from('questions')
-      .update({ [column]: currentValue + 1 })
-      .eq('id', postId);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    // Mark as voted and refresh
-    setVotedPosts(prev => new Set(prev).add(postId));
-    fetchQuestions();
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -138,33 +106,14 @@ export default function AskQuestionPage() {
           ) : (
             mainQuestions.map((q) => {
               const replies = getReplies(q.id);
-              const hasVoted = votedPosts.has(q.id);
-
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
+                  {/* Main Question */}
                   <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
-
-                  {/* Vote buttons */}
-                  <div className="flex items-center gap-6 mt-6 text-sm">
-                    <button 
-                      onClick={() => handleVote(q.id, 'up')}
-                      disabled={hasVoted}
-                      className={`flex items-center gap-1 transition ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-green-600 hover:text-green-700'}`}
-                    >
-                      ▲ <span className="font-medium">{q.upvotes || 0}</span>
-                    </button>
-                    <button 
-                      onClick={() => handleVote(q.id, 'down')}
-                      disabled={hasVoted}
-                      className={`flex items-center gap-1 transition ${hasVoted ? 'opacity-50 cursor-not-allowed' : 'text-red-600 hover:text-red-700'}`}
-                    >
-                      ▼ <span className="font-medium">{q.downvotes || 0}</span>
-                    </button>
-                    <p className="text-xs text-gray-500">
-                      Posted in <span className="font-medium">{q.category}</span>
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 mt-6">
+                    Posted in <span className="font-medium">{q.category}</span>
+                  </p>
 
                   {/* Replies */}
                   {replies.length > 0 && (
