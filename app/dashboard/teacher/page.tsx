@@ -49,15 +49,14 @@ export default function TeacherDashboard() {
     };
     fetchMyPosts();
 
-    // FIXED + Debug log
     const fetchOnlineUsers = async () => {
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
-        .in('role', ['hod', 'HoD'])   // catches both common casings
+        .in('role', ['hod', 'HoD'])
         .order('full_name');
 
-      console.log('🔍 Online Users fetched:', data); // ← Check browser console
+      console.log('🔍 Online Users fetched:', data);
       setOnlineUsers(data || []);
     };
     fetchOnlineUsers();
@@ -202,7 +201,12 @@ export default function TeacherDashboard() {
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {myPosts.map((post) => (
-                    <div key={post.id} className="bg-white rounded-2xl p-5 border">
+                    // ONLY THIS PART WAS CHANGED
+                    <div 
+                      key={post.id} 
+                      className="bg-white rounded-2xl p-5 border cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all"
+                      onClick={() => router.push('/dashboard/teacher/reflections')}
+                    >
                       <p className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()} • {post.category}</p>
                       <p className="font-medium text-black line-clamp-3 mt-2">{post.title || post.content}</p>
                     </div>
