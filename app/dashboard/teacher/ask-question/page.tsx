@@ -10,7 +10,7 @@ export default function AskQuestionPage() {
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [category, setCategory] = useState('General');   // ← default is now General
+  const [category, setCategory] = useState('General');
 
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
@@ -29,6 +29,23 @@ export default function AskQuestionPage() {
 
   const getReplies = (parentId: string) => {
     return allPosts.filter((p) => p.parent_id === parentId);
+  };
+
+  // ====================== VOTE HANDLER ======================
+  const handleVote = async (postId: string, voteType: 'up' | 'down') => {
+    const { data: { user } } = await supabaseBrowser.auth.getUser();
+    if (!user) return alert('Please log in to vote');
+
+    // Simple vote logic (toggle up/down, prevent multiple votes)
+    const { error } = await supabaseBrowser
+      .from('questions')
+      .update({
+        upvotes: voteType === 'up' ? (supabaseBrowser.rpc ? await supabaseBrowser.rpc('increment_votes', { row_id: postId, col: 'upvotes' }) : 0) : undefined,
+        downvotes: voteType === 'down' ? (supabaseBrowser.rpc ? await supabaseBrowser.rpc('increment_votes', { row_id: postId, col: 'downvotes' }) : 0) : undefined,
+      })
+      .eq('id', postId);
+
+    if (!error) fetchQuestions();
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -111,9 +128,25 @@ export default function AskQuestionPage() {
                   {/* Main Question */}
                   <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
-                  <p className="text-xs text-gray-500 mt-6">
-                    Posted in <span className="font-medium">{q.category}</span>
-                  </p>
+
+                  {/* Vote buttons */}
+                  <div className="flex items-center gap-6 mt-6 text-sm">
+                    <button 
+                      onClick={() => handleVote(q.id, 'up')}
+                      className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                    >
+                      ▲ <span className="font-medium">{q.upvotes || 0}</span>
+                    </button>
+                    <button 
+                      onClick={() => handleVote(q.id, 'down')}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                    >
+                      ▼ <span className="font-medium">{q.downvotes || 0}</span>
+                    </button>
+                    <p className="text-xs text-gray-500">
+                      Posted in <span className="font-medium">{q.category}</span>
+                    </p>
+                  </div>
 
                   {/* Replies */}
                   {replies.length > 0 && (
