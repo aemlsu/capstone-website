@@ -2,9 +2,50 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { supabaseBrowser } from '@/lib/supabase';   // ← Added
 
 export default function TransitionToolkit() {
   const [activeTab, setActiveTab] = useState<'images' | 'assessment'>('images');
+
+  // NEW: Form state for self assessment
+  const [ratings, setRatings] = useState({
+    curriculum: 3,
+    classroom: 3,
+    cultural: 3,
+    assessment: 3,
+    technology: 3,
+  });
+  const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitAssessment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const { data: { user } } = await supabaseBrowser.auth.getUser();
+
+    const { error } = await supabaseBrowser
+      .from('self_assessments')
+      .insert({
+        author_id: user?.id,
+        curriculum: ratings.curriculum,
+        classroom: ratings.classroom,
+        cultural: ratings.cultural,
+        assessment: ratings.assessment,
+        technology: ratings.technology,
+        notes: notes.trim(),
+      });
+
+    if (error) {
+      alert('Failed to submit: ' + error.message);
+    } else {
+      alert('✅ Monthly Self Assessment submitted successfully!');
+      // Reset form
+      setRatings({ curriculum: 3, classroom: 3, cultural: 3, assessment: 3, technology: 3 });
+      setNotes('');
+    }
+    setSubmitting(false);
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -82,45 +123,88 @@ export default function TransitionToolkit() {
 
           <p className="text-center text-gray-600 mb-10">Rate your current confidence level</p>
 
-          {/* Self Assessment Form (unchanged) */}
-          <form className="space-y-8">
+          <form onSubmit={handleSubmitAssessment} className="space-y-8">
             <div>
               <label className="block text-black font-medium mb-2">1. Implementing UAE Curriculum &amp; Standards</label>
-              <input type="range" min="1" max="5" defaultValue="3" className="w-full accent-blue-600" />
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                value={ratings.curriculum}
+                onChange={(e) => setRatings(prev => ({ ...prev, curriculum: Number(e.target.value) }))}
+                className="w-full accent-blue-600" 
+              />
               <div className="flex justify-between text-sm text-gray-500"><span>1</span><span>5</span></div>
             </div>
 
             <div>
               <label className="block text-black font-medium mb-2">2. Classroom Management in UAE Context</label>
-              <input type="range" min="1" max="5" defaultValue="3" className="w-full accent-blue-600" />
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                value={ratings.classroom}
+                onChange={(e) => setRatings(prev => ({ ...prev, classroom: Number(e.target.value) }))}
+                className="w-full accent-blue-600" 
+              />
               <div className="flex justify-between text-sm text-gray-500"><span>1</span><span>5</span></div>
             </div>
 
             <div>
               <label className="block text-black font-medium mb-2">3. Cultural &amp; Social Adaptation</label>
-              <input type="range" min="1" max="5" defaultValue="3" className="w-full accent-blue-600" />
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                value={ratings.cultural}
+                onChange={(e) => setRatings(prev => ({ ...prev, cultural: Number(e.target.value) }))}
+                className="w-full accent-blue-600" 
+              />
               <div className="flex justify-between text-sm text-gray-500"><span>1</span><span>5</span></div>
             </div>
 
             <div>
               <label className="block text-black font-medium mb-2">4. Assessment &amp; Feedback Practices</label>
-              <input type="range" min="1" max="5" defaultValue="3" className="w-full accent-blue-600" />
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                value={ratings.assessment}
+                onChange={(e) => setRatings(prev => ({ ...prev, assessment: Number(e.target.value) }))}
+                className="w-full accent-blue-600" 
+              />
               <div className="flex justify-between text-sm text-gray-500"><span>1</span><span>5</span></div>
             </div>
 
             <div>
               <label className="block text-black font-medium mb-2">5. Technology Integration in Teaching</label>
-              <input type="range" min="1" max="5" defaultValue="3" className="w-full accent-blue-600" />
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                value={ratings.technology}
+                onChange={(e) => setRatings(prev => ({ ...prev, technology: Number(e.target.value) }))}
+                className="w-full accent-blue-600" 
+              />
               <div className="flex justify-between text-sm text-gray-500"><span>1</span><span>5</span></div>
             </div>
 
             <div>
               <label className="block text-black font-medium mb-2">Additional Notes / Reflections</label>
-              <textarea className="w-full h-32 border rounded-3xl p-6" placeholder="Any thoughts or areas you want to improve..." />
+              <textarea 
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full h-32 border rounded-3xl p-6" 
+                placeholder="Any thoughts or areas you want to improve..." 
+              />
             </div>
 
-            <button type="button" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-3xl text-xl font-semibold">
-              Submit Monthly Self Assessment
+            <button 
+              type="submit" 
+              disabled={submitting}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-6 rounded-3xl text-xl font-semibold"
+            >
+              {submitting ? 'Submitting...' : 'Submit Monthly Self Assessment'}
             </button>
           </form>
         </div>
