@@ -50,7 +50,7 @@ export default function CreditsPage() {
           <h2 className="text-3xl font-semibold mb-6">Special Thanks</h2>
           <div className="text-lg leading-relaxed space-y-6">
             <p>
-              To <strong>Dr. Romel E. Pelayo</strong>, our Principal, to school and Dr Romel for their guidance, support, 
+              To <strong>Dr. Rommel E. Pelayo</strong>, our Principal, to the school for their guidance, support, 
               and encouragement throughout this project.
             </p><p>
               To <strong>Dr. Allan T. Cariaga, Ph.D.</strong>, VP for Academics, for his guidance, encouragement, 
@@ -61,12 +61,22 @@ export default function CreditsPage() {
               To <strong>Ms. Bianca Camille P. Mistal</strong> (Capstone Teacher) and <strong>Renato A. Dela Peña Jr., M.A.</strong> for their mentorship, 
               patience, and continuous support during the entire research process.
             </p>
-                To <strong>Sir Sean Buscano</strong> for his invaluable technical assistance in building and developing this website.
+                To <strong>Sir Sean Buscano</strong>
             <p></p>
             <p>
             </p>
             <p>
-            
+              To Mr. Michael Aniag (Librarian) for providing a comfortable space for the interviews.
+            </p>
+            <p>
+              To the expert validators: Ms. Queen Irish C. Alagad, Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, 
+              Ms. Rhea P. Rosete, and Ms. Emelita D. Urbano.
+            </p>
+            <p>
+              To the SHS Research Ethics Committee: Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, and Ms. Richelle A. Costa.
+            </p>
+            <p>
+              To our families, friends, and loved ones for their unwavering support and encouragement.
             </p>
             <p className="font-medium">
               Above all, to God for the strength, guidance, and perseverance that made this study possible. 
