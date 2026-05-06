@@ -11,6 +11,12 @@ export default function ReflectionsAndConcernsPage() {
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
+  // NEW: Current user + Edit mode
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+
   // Monthly reflection answers
   const [reflectionAnswers, setReflectionAnswers] = useState({
     q1: '',
@@ -30,12 +36,64 @@ export default function ReflectionsAndConcernsPage() {
   };
 
   useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
     fetchPosts();
   }, [activeTab]);
 
   const mainPosts = allPosts.filter((post) => !post.parent_id);
 
   const getReplies = (parentId: string) => allPosts.filter((p) => p.parent_id === parentId);
+
+  // NEW: Edit functions
+  const startEdit = (post: any) => {
+    setEditingId(post.id);
+    setEditTitle(post.title || '');
+    setEditContent(post.content || '');
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+
+    const table = getTableName();
+    const { error } = await supabaseBrowser
+      .from(table)
+      .update({
+        title: editTitle || (activeTab === 'reflections' ? 'Reflection' : 'Concern'),
+        content: editContent,
+      })
+      .eq('id', editingId);
+
+    if (error) {
+      alert('Failed to update: ' + error.message);
+    } else {
+      alert('✅ Updated successfully');
+      setEditingId(null);
+      fetchPosts();
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+  };
+
+  // NEW: Delete function
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this post permanently?')) return;
+
+    const table = getTableName();
+    const { error } = await supabaseBrowser.from(table).delete().eq('id', id);
+
+    if (error) {
+      alert('Failed to delete: ' + error.message);
+    } else {
+      alert('✅ Post deleted successfully');
+      fetchPosts();
+    }
+  };
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,11 +146,9 @@ ${reflectionAnswers.q3 || 'No answer'}
       });
 
     if (error) {
-      console.error('Insert Error:', error);
       alert('POST FAILED\n\nError: ' + error.message);
     } else {
       alert('✅ Posted successfully!');
-      // Reset form
       setNewTitle('');
       setNewContent('');
       setReflectionAnswers({ q1: '', q2: '', q3: '' });
@@ -218,16 +274,54 @@ ${reflectionAnswers.q3 || 'No answer'}
           ) : (
             mainPosts.map((post) => {
               const replies = getReplies(post.id);
+              const isOwnPost = currentUserId && post.author_id === currentUserId;
+              const isEditing = editingId === post.id;
+
               return (
                 <div key={post.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
-                  <h3 className="text-2xl font-semibold text-black">
-                    {post.title || (activeTab === 'reflections' ? 'Reflection' : 'Concern')}
-                  </h3>
-                  <p className="text-gray-900 mt-3 text-[17px] whitespace-pre-line">{post.content}</p>
-                  <p className="text-xs text-gray-500 mt-6">
-                    Posted in <span className="font-medium">{post.category}</span>
-                  </p>
+                  {isEditing ? (
+                    /* Edit Mode */
+                    <div>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="w-full p-4 rounded-2xl border mb-4 text-black"
+                        placeholder="Title"
+                      />
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={4}
+                        className="w-full p-4 rounded-2xl border text-black mb-4"
+                      />
+                      <div className="flex gap-4">
+                        <button onClick={saveEdit} className="bg-green-600 text-white px-6 py-3 rounded-3xl">Save Changes</button>
+                        <button onClick={cancelEdit} className="bg-gray-500 text-white px-6 py-3 rounded-3xl">Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Normal View */
+                    <>
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-2xl font-semibold text-black">
+                          {post.title || (activeTab === 'reflections' ? 'Reflection' : 'Concern')}
+                        </h3>
+                        {isOwnPost && (
+                          <div className="flex gap-3">
+                            <button onClick={() => startEdit(post)} className="text-blue-600 hover:text-blue-700">✏️ Edit</button>
+                            <button onClick={() => handleDelete(post.id)} className="text-red-600 hover:text-red-700">🗑️ Delete</button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-gray-900 mt-3 text-[17px] whitespace-pre-line">{post.content}</p>
+                      <p className="text-xs text-gray-500 mt-6">
+                        Posted in <span className="font-medium">{post.category}</span>
+                      </p>
+                    </>
+                  )}
 
+                  {/* Replies */}
                   {replies.length > 0 && (
                     <div className="mt-10 space-y-6">
                       {replies.map((reply) => (
