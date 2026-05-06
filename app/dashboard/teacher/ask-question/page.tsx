@@ -12,7 +12,7 @@ export default function AskQuestionPage() {
   const [category, setCategory] = useState('General');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Edit mode states
+  // Edit mode
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -41,7 +41,7 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // Start editing a post
+  // Start editing
   const startEdit = (post: any) => {
     setEditingId(post.id);
     setEditTitle(post.title || '');
@@ -49,7 +49,7 @@ export default function AskQuestionPage() {
     setEditCategory(post.category || 'General');
   };
 
-  // Save edited post
+  // Save edit
   const saveEdit = async () => {
     if (!editingId) return;
 
@@ -65,12 +65,12 @@ export default function AskQuestionPage() {
     if (error) {
       alert('Failed to update: ' + error.message);
     } else {
-      setEditingId(null);
-      fetchQuestions();
+      setEditingId(null);     // exit edit mode
+      fetchQuestions();       // refresh list
     }
   };
 
-  // Cancel editing
+  // Cancel edit
   const cancelEdit = () => {
     setEditingId(null);
   };
@@ -87,7 +87,7 @@ export default function AskQuestionPage() {
     if (error) {
       alert('Failed to delete: ' + error.message);
     } else {
-      fetchQuestions();
+      fetchQuestions();       // refresh list
     }
   };
 
@@ -159,7 +159,7 @@ export default function AskQuestionPage() {
           </div>
         </form>
 
-        {/* Questions + Replies */}
+        {/* Questions list */}
         <div className="space-y-8">
           {mainQuestions.length === 0 ? (
             <p className="text-white text-center py-12">No questions yet. Be the first to ask!</p>
@@ -212,7 +212,7 @@ export default function AskQuestionPage() {
                       </div>
                     </div>
                   ) : (
-                    // Normal View
+                    // Normal view
                     <>
                       <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
