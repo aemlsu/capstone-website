@@ -13,7 +13,6 @@ export default function AdminDashboard() {
   const [replyContent, setReplyContent] = useState<{ [key: string]: string }>({});
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
 
-  // NEW: Current user + Reply edit states
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editReplyContent, setEditReplyContent] = useState('');
@@ -22,15 +21,18 @@ export default function AdminDashboard() {
 
   const fetchPosts = async () => {
     const table = getTableName();
-    let query = supabaseBrowser.from(table).select('*');
 
+    let query;
     if (table === 'self_assessments') {
+      // Fixed join to get teacher name
       query = supabaseBrowser
         .from('self_assessments')
         .select(`
           *,
-          profiles!author_id (full_name)
+          profiles:author_id (full_name)
         `);
+    } else {
+      query = supabaseBrowser.from(table).select('*');
     }
 
     const { data } = await query.order('created_at', { ascending: false });
@@ -45,6 +47,8 @@ export default function AdminDashboard() {
     getCurrentUser();
     fetchPosts();
   }, [activeTab]);
+
+  // ... (everything else stays exactly the same - no other changes)
 
   const mainPosts = allPosts.filter((post) => !post.parent_id);
 
@@ -64,13 +68,10 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
-
     const table = getTableName();
     const { error } = await supabaseBrowser.from(table).delete().eq('id', id);
-
-    if (error) {
-      alert('Delete failed: ' + error.message);
-    } else {
+    if (error) alert('Delete failed: ' + error.message);
+    else {
       alert('✅ Post deleted successfully');
       fetchPosts();
     }
@@ -83,30 +84,24 @@ export default function AdminDashboard() {
 
   const saveEditReply = async () => {
     if (!editingReplyId) return;
-
     const table = getTableName();
     const { error } = await supabaseBrowser
       .from(table)
       .update({ content: editReplyContent })
       .eq('id', editingReplyId);
-
-    if (error) {
-      alert('Failed to update reply: ' + error.message);
-    } else {
+    if (error) alert('Failed to update reply: ' + error.message);
+    else {
       alert('✅ Reply updated successfully');
       setEditingReplyId(null);
       fetchPosts();
     }
   };
 
-  const cancelEditReply = () => {
-    setEditingReplyId(null);
-  };
+  const cancelEditReply = () => setEditingReplyId(null);
 
   const handleReply = async (postId: string) => {
     const text = replyContent[postId];
     if (!text?.trim()) return;
-
     const { data: { user } } = await supabaseBrowser.auth.getUser();
     const table = getTableName();
     const parent = allPosts.find(p => p.id === postId);
@@ -118,10 +113,8 @@ export default function AdminDashboard() {
       author_id: user?.id,
       category: parentCategory,
     });
-
-    if (error) {
-      alert('Failed to post reply: ' + error.message);
-    } else {
+    if (error) alert('Failed to post reply: ' + error.message);
+    else {
       setReplyContent(prev => ({ ...prev, [postId]: '' }));
       setReplyingToId(null);
       fetchPosts();
@@ -142,7 +135,6 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Original export for other tabs
     const csv = filteredMainPosts.map(p => 
       `${p.created_at?.split('T')[0] || ''},${p.category || ''},"${p.title || ''}","${p.content || ''}"`
     ).join('\n');
@@ -159,7 +151,6 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-5xl font-bold text-white drop-shadow-2xl">Admin / HoD Dashboard</h1>
-          
           <div className="flex gap-4">
             <button onClick={() => router.push('/resources')} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">
               📚 Resource Library
@@ -170,7 +161,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tabs - NEW Self Assessments tab added */}
+        {/* Tabs */}
         <div className="flex border-b mb-6 text-white">
           <button onClick={() => { setActiveTab('questions'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'questions' ? 'border-b-4 border-blue-600' : ''}`}>Questions</button>
           <button onClick={() => { setActiveTab('reflections'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'reflections' ? 'border-b-4 border-blue-600' : ''}`}>Reflections</button>
@@ -231,7 +222,6 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {activeTab === 'self_assessments' ? (
-                // Self Assessments Table
                 allPosts.map((sa: any) => (
                   <tr key={sa.id} className="border-t">
                     <td className="p-6 text-black">{new Date(sa.created_at).toLocaleDateString()}</td>
@@ -245,7 +235,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                // Original Questions / Reflections / Concerns table (unchanged)
+                // Original Questions/Reflections/Concerns code (unchanged)
                 filteredMainPosts.map((post) => {
                   const replies = getReplies(post.id);
                   const isExpanded = expandedPosts.has(post.id);
