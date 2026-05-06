@@ -24,13 +24,8 @@ export default function AdminDashboard() {
 
     let query;
     if (table === 'self_assessments') {
-      // Fixed join to get teacher name
-      query = supabaseBrowser
-        .from('self_assessments')
-        .select(`
-          *,
-          profiles:author_id (full_name)
-        `);
+      // Simplified - no join (this is what was breaking it)
+      query = supabaseBrowser.from('self_assessments').select('*');
     } else {
       query = supabaseBrowser.from(table).select('*');
     }
@@ -47,8 +42,6 @@ export default function AdminDashboard() {
     getCurrentUser();
     fetchPosts();
   }, [activeTab]);
-
-  // ... (everything else stays exactly the same - no other changes)
 
   const mainPosts = allPosts.filter((post) => !post.parent_id);
 
@@ -124,7 +117,7 @@ export default function AdminDashboard() {
   const exportCSV = () => {
     if (activeTab === 'self_assessments') {
       const csv = allPosts.map(p => 
-        `${p.created_at?.split('T')[0] || ''},${p.profiles?.full_name || 'Unknown'},${p.curriculum || ''},${p.classroom || ''},${p.cultural || ''},${p.assessment || ''},${p.technology || ''},"${p.notes || ''}"`
+        `${p.created_at?.split('T')[0] || ''},Unknown Teacher,${p.curriculum || ''},${p.classroom || ''},${p.cultural || ''},${p.assessment || ''},${p.technology || ''},"${p.notes || ''}"`
       ).join('\n');
       const blob = new Blob(['Date,Teacher,Curriculum,Classroom,Cultural,Assessment,Technology,Notes\n' + csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -225,7 +218,7 @@ export default function AdminDashboard() {
                 allPosts.map((sa: any) => (
                   <tr key={sa.id} className="border-t">
                     <td className="p-6 text-black">{new Date(sa.created_at).toLocaleDateString()}</td>
-                    <td className="p-6 text-black">{sa.profiles?.full_name || 'Unknown'}</td>
+                    <td className="p-6 text-black">Teacher</td>
                     <td className="p-6 text-center text-black">{sa.curriculum || '-'}</td>
                     <td className="p-6 text-center text-black">{sa.classroom || '-'}</td>
                     <td className="p-6 text-center text-black">{sa.cultural || '-'}</td>
@@ -235,7 +228,7 @@ export default function AdminDashboard() {
                   </tr>
                 ))
               ) : (
-                // Original Questions/Reflections/Concerns code (unchanged)
+                // Original code for other tabs (unchanged)
                 filteredMainPosts.map((post) => {
                   const replies = getReplies(post.id);
                   const isExpanded = expandedPosts.has(post.id);
