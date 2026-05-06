@@ -49,13 +49,15 @@ export default function TeacherDashboard() {
     };
     fetchMyPosts();
 
-    // FIXED: Now shows both 'hod' and 'HoD' (your database has mixed casing)
+    // FIXED + Debug log
     const fetchOnlineUsers = async () => {
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
-        .in('role', ['hod', 'HoD'])   // ← This is the only line that changed
+        .in('role', ['hod', 'HoD'])   // catches both common casings
         .order('full_name');
+
+      console.log('🔍 Online Users fetched:', data); // ← Check browser console
       setOnlineUsers(data || []);
     };
     fetchOnlineUsers();
