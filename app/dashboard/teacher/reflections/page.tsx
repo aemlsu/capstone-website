@@ -7,7 +7,7 @@ export default function ReflectionsAndConcernsPage() {
   const [activeTab, setActiveTab] = useState<'reflections' | 'concerns'>('reflections');
   const [reflectionSubTab, setReflectionSubTab] = useState<'monthly' | 'normal'>('monthly');
   const [allPosts, setAllPosts] = useState<any[]>([]);
-  const [newTitle, setNewTitle] = useState('');        // ← NEW
+  const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [category, setCategory] = useState('General');
 
@@ -61,14 +61,21 @@ ${reflectionAnswers.q3 || 'No answer'}
         titleToSave = newTitle.trim() || 'Reflection';
       }
     } else {
-      // Concerns
       contentToSave = newContent.trim();
       titleToSave = newTitle.trim() || 'Concern';
     }
 
-    if (!contentToSave) return;
+    if (!contentToSave) {
+      alert('Please write something before posting.');
+      return;
+    }
 
     const { data: { user } } = await supabaseBrowser.auth.getUser();
+    if (!user) {
+      alert('You must be logged in to post.');
+      return;
+    }
+
     const table = getTableName();
 
     const { error } = await supabaseBrowser
@@ -77,10 +84,14 @@ ${reflectionAnswers.q3 || 'No answer'}
         title: titleToSave,
         content: contentToSave,
         category: category,
-        author_id: user?.id,
+        author_id: user.id,
       });
 
-    if (!error) {
+    if (error) {
+      console.error('Insert Error:', error);
+      alert('POST FAILED\n\nError: ' + error.message);
+    } else {
+      alert('✅ Posted successfully!');
       // Reset form
       setNewTitle('');
       setNewContent('');
