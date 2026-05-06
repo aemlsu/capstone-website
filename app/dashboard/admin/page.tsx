@@ -6,7 +6,7 @@ import { supabaseBrowser } from '@/lib/supabase';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'questions' | 'reflections' | 'concerns'>('questions');
+  const [activeTab, setActiveTab] = useState<'questions' | 'reflections' | 'concerns' | 'self_assessments'>('questions');
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -18,14 +18,22 @@ export default function AdminDashboard() {
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editReplyContent, setEditReplyContent] = useState('');
 
-  const getTableName = () => activeTab;
+  const getTableName = () => activeTab === 'self_assessments' ? 'self_assessments' : activeTab;
 
   const fetchPosts = async () => {
     const table = getTableName();
-    const { data } = await supabaseBrowser
-      .from(table)
-      .select('*')
-      .order('created_at', { ascending: false });
+    let query = supabaseBrowser.from(table).select('*');
+
+    if (table === 'self_assessments') {
+      query = supabaseBrowser
+        .from('self_assessments')
+        .select(`
+          *,
+          profiles!author_id (full_name)
+        `);
+    }
+
+    const { data } = await query.order('created_at', { ascending: false });
     setAllPosts(data || []);
   };
 
@@ -54,7 +62,6 @@ export default function AdminDashboard() {
     setExpandedPosts(newSet);
   };
 
-  // Delete any main post (existing)
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
 
@@ -69,7 +76,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // NEW: Edit own reply
   const startEditReply = (reply: any) => {
     setEditingReplyId(reply.id);
     setEditReplyContent(reply.content || '');
@@ -123,6 +129,20 @@ export default function AdminDashboard() {
   };
 
   const exportCSV = () => {
+    if (activeTab === 'self_assessments') {
+      const csv = allPosts.map(p => 
+        `${p.created_at?.split('T')[0] || ''},${p.profiles?.full_name || 'Unknown'},${p.curriculum || ''},${p.classroom || ''},${p.cultural || ''},${p.assessment || ''},${p.technology || ''},"${p.notes || ''}"`
+      ).join('\n');
+      const blob = new Blob(['Date,Teacher,Curriculum,Classroom,Cultural,Assessment,Technology,Notes\n' + csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'self_assessments.csv';
+      a.click();
+      return;
+    }
+
+    // Original export for other tabs
     const csv = filteredMainPosts.map(p => 
       `${p.created_at?.split('T')[0] || ''},${p.category || ''},"${p.title || ''}","${p.content || ''}"`
     ).join('\n');
@@ -150,11 +170,12 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - NEW Self Assessments tab added */}
         <div className="flex border-b mb-6 text-white">
           <button onClick={() => { setActiveTab('questions'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'questions' ? 'border-b-4 border-blue-600' : ''}`}>Questions</button>
           <button onClick={() => { setActiveTab('reflections'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'reflections' ? 'border-b-4 border-blue-600' : ''}`}>Reflections</button>
           <button onClick={() => { setActiveTab('concerns'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'concerns' ? 'border-b-4 border-blue-600' : ''}`}>Concerns</button>
+          <button onClick={() => { setActiveTab('self_assessments'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'self_assessments' ? 'border-b-4 border-blue-600' : ''}`}>Self Assessments</button>
         </div>
 
         {/* Filter + Export */}
@@ -185,109 +206,122 @@ export default function AdminDashboard() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-100">
-                <th className="text-left p-6 text-black">Date</th>
-                <th className="text-left p-6 text-black">Category</th>
-                <th className="text-left p-6 text-black">Title / Content</th>
-                <th className="text-center p-6 text-black">Up</th>
-                <th className="text-center p-6 text-black">Down</th>
-                <th className="text-center p-6 text-black">Actions</th>
+                {activeTab === 'self_assessments' ? (
+                  <>
+                    <th className="text-left p-6 text-black">Date</th>
+                    <th className="text-left p-6 text-black">Teacher</th>
+                    <th className="text-center p-6 text-black">Curriculum</th>
+                    <th className="text-center p-6 text-black">Classroom</th>
+                    <th className="text-center p-6 text-black">Cultural</th>
+                    <th className="text-center p-6 text-black">Assessment</th>
+                    <th className="text-center p-6 text-black">Technology</th>
+                    <th className="text-left p-6 text-black">Notes</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="text-left p-6 text-black">Date</th>
+                    <th className="text-left p-6 text-black">Category</th>
+                    <th className="text-left p-6 text-black">Title / Content</th>
+                    <th className="text-center p-6 text-black">Up</th>
+                    <th className="text-center p-6 text-black">Down</th>
+                    <th className="text-center p-6 text-black">Actions</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
-              {filteredMainPosts.map((post) => {
-                const replies = getReplies(post.id);
-                const isExpanded = expandedPosts.has(post.id);
-                return (
-                  <>
-                    <tr key={post.id} className="border-t">
-                      <td className="p-6 text-black">{new Date(post.created_at).toLocaleDateString()}</td>
-                      <td className="p-6 text-black">{post.category}</td>
-                      <td className="p-6 text-black">
-                        <strong>{post.title || 'Untitled'}</strong>
-                        <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
-                          {post.content}
-                        </p>
-                        {post.content && post.content.length > 120 && (
-                          <button
-                            onClick={() => toggleExpand(post.id)}
-                            className="text-blue-600 text-xs mt-2 hover:underline flex items-center gap-1"
-                          >
-                            {isExpanded ? '▲ Read less' : '▼ Read more'}
+              {activeTab === 'self_assessments' ? (
+                // Self Assessments Table
+                allPosts.map((sa: any) => (
+                  <tr key={sa.id} className="border-t">
+                    <td className="p-6 text-black">{new Date(sa.created_at).toLocaleDateString()}</td>
+                    <td className="p-6 text-black">{sa.profiles?.full_name || 'Unknown'}</td>
+                    <td className="p-6 text-center text-black">{sa.curriculum || '-'}</td>
+                    <td className="p-6 text-center text-black">{sa.classroom || '-'}</td>
+                    <td className="p-6 text-center text-black">{sa.cultural || '-'}</td>
+                    <td className="p-6 text-center text-black">{sa.assessment || '-'}</td>
+                    <td className="p-6 text-center text-black">{sa.technology || '-'}</td>
+                    <td className="p-6 text-black">{sa.notes || '-'}</td>
+                  </tr>
+                ))
+              ) : (
+                // Original Questions / Reflections / Concerns table (unchanged)
+                filteredMainPosts.map((post) => {
+                  const replies = getReplies(post.id);
+                  const isExpanded = expandedPosts.has(post.id);
+                  return (
+                    <>
+                      <tr key={post.id} className="border-t">
+                        <td className="p-6 text-black">{new Date(post.created_at).toLocaleDateString()}</td>
+                        <td className="p-6 text-black">{post.category}</td>
+                        <td className="p-6 text-black">
+                          <strong>{post.title || 'Untitled'}</strong>
+                          <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                            {post.content}
+                          </p>
+                          {post.content && post.content.length > 120 && (
+                            <button onClick={() => toggleExpand(post.id)} className="text-blue-600 text-xs mt-2 hover:underline flex items-center gap-1">
+                              {isExpanded ? '▲ Read less' : '▼ Read more'}
+                            </button>
+                          )}
+                        </td>
+                        <td className="p-6 text-center text-black">{post.upvotes || 0}</td>
+                        <td className="p-6 text-center text-black">{post.downvotes || 0}</td>
+                        <td className="p-6 text-center flex gap-4 justify-center">
+                          <button onClick={() => setReplyingToId(replyingToId === post.id ? null : post.id)} className="text-blue-600 hover:text-blue-700 font-medium">
+                            {replyingToId === post.id ? 'Cancel' : 'Reply'}
                           </button>
-                        )}
-                      </td>
-                      <td className="p-6 text-center text-black">{post.upvotes || 0}</td>
-                      <td className="p-6 text-center text-black">{post.downvotes || 0}</td>
-                      <td className="p-6 text-center flex gap-4 justify-center">
-                        <button 
-                          onClick={() => setReplyingToId(replyingToId === post.id ? null : post.id)}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                          {replyingToId === post.id ? 'Cancel' : 'Reply'}
-                        </button>
-                        <button onClick={() => handleDelete(post.id)} className="text-red-600 hover:text-red-700">🗑️</button>
-                      </td>
-                    </tr>
-
-                    {/* Replies */}
-                    {replies.map((reply) => {
-                      const isOwnReply = currentUserId && reply.author_id === currentUserId;
-                      const isEditingThisReply = editingReplyId === reply.id;
-
-                      return (
-                        <tr key={reply.id} className="bg-gray-50 border-t">
-                          <td className="p-6 text-gray-500 pl-12">↳ Reply</td>
-                          <td className="p-6 text-gray-500"></td>
-                          <td className="p-6 text-gray-700" colSpan={3}>
-                            {isEditingThisReply ? (
-                              <div>
-                                <textarea
-                                  value={editReplyContent}
-                                  onChange={(e) => setEditReplyContent(e.target.value)}
-                                  rows={2}
-                                  className="w-full p-3 rounded-2xl border text-black"
-                                />
-                                <div className="flex gap-3 mt-3">
-                                  <button onClick={saveEditReply} className="bg-green-600 text-white px-5 py-2 rounded-3xl text-sm">Save</button>
-                                  <button onClick={cancelEditReply} className="bg-gray-500 text-white px-5 py-2 rounded-3xl text-sm">Cancel</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <p>{reply.content}</p>
-                            )}
-                          </td>
-                          <td className="p-6 text-center flex gap-3">
-                            {isOwnReply && !isEditingThisReply && (
-                              <>
-                                <button onClick={() => startEditReply(reply)} className="text-blue-600 hover:text-blue-700">✏️</button>
-                                <button onClick={() => handleDelete(reply.id)} className="text-red-600 hover:text-red-700">🗑️</button>
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-
-                    {replyingToId === post.id && (
-                      <tr>
-                        <td colSpan={6} className="p-6 bg-white/70">
-                          <textarea
-                            value={replyContent[post.id] || ''}
-                            onChange={(e) => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))}
-                            rows={3}
-                            className="w-full p-4 rounded-2xl border text-black"
-                            placeholder="Write your reply here..."
-                          />
-                          <div className="flex gap-4 mt-4">
-                            <button onClick={() => { setReplyContent(prev => ({ ...prev, [post.id]: '' })); setReplyingToId(null); }} className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-2xl">Cancel</button>
-                            <button onClick={() => handleReply(post.id)} className="bg-blue-600 text-white px-8 py-3 rounded-3xl hover:bg-blue-700">Send Reply</button>
-                          </div>
+                          <button onClick={() => handleDelete(post.id)} className="text-red-600 hover:text-red-700">🗑️</button>
                         </td>
                       </tr>
-                    )}
-                  </>
-                );
-              })}
+
+                      {replies.map((reply) => {
+                        const isOwnReply = currentUserId && reply.author_id === currentUserId;
+                        const isEditingThisReply = editingReplyId === reply.id;
+                        return (
+                          <tr key={reply.id} className="bg-gray-50 border-t">
+                            <td className="p-6 text-gray-500 pl-12">↳ Reply</td>
+                            <td className="p-6 text-gray-500"></td>
+                            <td className="p-6 text-gray-700" colSpan={3}>
+                              {isEditingThisReply ? (
+                                <div>
+                                  <textarea value={editReplyContent} onChange={(e) => setEditReplyContent(e.target.value)} rows={2} className="w-full p-3 rounded-2xl border text-black" />
+                                  <div className="flex gap-3 mt-3">
+                                    <button onClick={saveEditReply} className="bg-green-600 text-white px-5 py-2 rounded-3xl text-sm">Save</button>
+                                    <button onClick={cancelEditReply} className="bg-gray-500 text-white px-5 py-2 rounded-3xl text-sm">Cancel</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p>{reply.content}</p>
+                              )}
+                            </td>
+                            <td className="p-6 text-center flex gap-3">
+                              {isOwnReply && !isEditingThisReply && (
+                                <>
+                                  <button onClick={() => startEditReply(reply)} className="text-blue-600 hover:text-blue-700">✏️</button>
+                                  <button onClick={() => handleDelete(reply.id)} className="text-red-600 hover:text-red-700">🗑️</button>
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {replyingToId === post.id && (
+                        <tr>
+                          <td colSpan={6} className="p-6 bg-white/70">
+                            <textarea value={replyContent[post.id] || ''} onChange={(e) => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))} rows={3} className="w-full p-4 rounded-2xl border text-black" placeholder="Write your reply here..." />
+                            <div className="flex gap-4 mt-4">
+                              <button onClick={() => { setReplyContent(prev => ({ ...prev, [post.id]: '' })); setReplyingToId(null); }} className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-2xl">Cancel</button>
+                              <button onClick={() => handleReply(post.id)} className="bg-blue-600 text-white px-8 py-3 rounded-3xl hover:bg-blue-700">Send Reply</button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
