@@ -49,15 +49,18 @@ export default function TeacherDashboard() {
     };
     fetchMyPosts();
 
-  const fetchOnlineUsers = async () => {
+    // FIXED: Now properly called + removed non-existent is_online filter
+    const fetchOnlineUsers = async () => {
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
         .eq('role', 'hod')
-        .eq('is_online', true)          // ← Added this to show only actually online HoDs
         .order('full_name');
       setOnlineUsers(data || []);
     };
+    fetchOnlineUsers();
+
+  }, [router]);
 
   const handleQuickAsk = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +120,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8 items-stretch">   {/* ← This fixes alignment */}
+        <div className="grid grid-cols-12 gap-8 items-stretch">
           {/* LEFT: Online Status */}
           <div className="col-span-2">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
@@ -137,7 +140,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* CENTER: 1x4 cards - now same height as Resource Access */}
+          {/* CENTER: 1x4 cards */}
           <div className="col-span-7 grid grid-cols-4 gap-6">
             <Link href="/dashboard/teacher/ask-question" className="group">
               <div className="bg-[#f8e4c2] hover:bg-[#f5d9a8] transition rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center h-full">
@@ -187,7 +190,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* BOTTOM: My Postings + Teaching Tools (left) + Quick Question (right) */}
+        {/* BOTTOM: My Postings + Teaching Tools + Quick Question */}
         <div className="grid grid-cols-12 gap-8 mt-16">
           <div className="col-span-6 space-y-8">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
