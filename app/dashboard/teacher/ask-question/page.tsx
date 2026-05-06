@@ -12,7 +12,7 @@ export default function AskQuestionPage() {
   const [category, setCategory] = useState('General');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Edit mode
+  // Edit mode states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
@@ -41,7 +41,7 @@ export default function AskQuestionPage() {
     return allPosts.filter((p) => p.parent_id === parentId);
   };
 
-  // Start editing
+  // Start editing a post
   const startEdit = (post: any) => {
     setEditingId(post.id);
     setEditTitle(post.title || '');
@@ -62,11 +62,11 @@ export default function AskQuestionPage() {
       })
       .eq('id', editingId);
 
-    if (!error) {
+    if (error) {
+      alert('Failed to update: ' + error.message);
+    } else {
       setEditingId(null);
       fetchQuestions();
-    } else {
-      alert('Failed to update: ' + error.message);
     }
   };
 
@@ -84,7 +84,11 @@ export default function AskQuestionPage() {
       .delete()
       .eq('id', id);
 
-    if (!error) fetchQuestions();
+    if (error) {
+      alert('Failed to delete: ' + error.message);
+    } else {
+      fetchQuestions();
+    }
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -168,7 +172,7 @@ export default function AskQuestionPage() {
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
                   {isEditing ? (
-                    /* Edit Mode */
+                    // Edit Mode
                     <div>
                       <input
                         type="text"
@@ -208,14 +212,14 @@ export default function AskQuestionPage() {
                       </div>
                     </div>
                   ) : (
-                    /* Normal View */
+                    // Normal View
                     <>
                       <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
                         {isOwnPost && (
                           <div className="flex gap-3">
                             <button onClick={() => startEdit(q)} className="text-blue-600 hover:text-blue-700">✏️ Edit</button>
-                            <button onClick={() => handleDelete(q.id)} className="text-red-600 hover:text-red-700">🗑️</button>
+                            <button onClick={() => handleDelete(q.id)} className="text-red-600 hover:text-red-700">🗑️ Delete</button>
                           </div>
                         )}
                       </div>
