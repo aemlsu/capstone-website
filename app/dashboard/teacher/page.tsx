@@ -205,7 +205,7 @@ export default function TeacherDashboard() {
                     <div 
                       key={post.id} 
                       className="bg-white rounded-2xl p-5 border cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all"
-                      onClick={() => router.push('/dashboard/teacher/reflections')}
+                      onClick={() => router.push('/dashboard/teacher/ask-question')}
                     >
                       <p className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()} • {post.category}</p>
                       <p className="font-medium text-black line-clamp-3 mt-2">{post.title || post.content}</p>
