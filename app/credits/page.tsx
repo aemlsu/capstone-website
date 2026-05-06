@@ -51,7 +51,7 @@ export default function CreditsPage() {
           <div className="text-lg leading-relaxed space-y-6">
             <p>
             We would like to express our deepest gratitude to The Philippine School Dubai administration for their full support in making this research possible. 
-              We are deeply grateful to our <strong>Principal, Dr. Rommel E. Pelayo</strong>, and our <strong>cVice Principal, Dr. Allan T. Cariaga</strong>, for their continuous guidance, trust, and encouragement throughout this research journey
+              We are deeply grateful to our <strong>Principal, Dr. Rommel E. Pelayo</strong>, and our <strong>Vice Principal, Dr. Allan T. Cariaga</strong>, for their continuous guidance, trust, and encouragement throughout this research journey
 
             </p>
             <p>
