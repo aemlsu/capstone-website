@@ -11,6 +11,7 @@ export default function AdminDashboard() {
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<{ [key: string]: string }>({});
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());   // ← New state for expandable questions
 
   const getTableName = () => activeTab;
 
@@ -36,6 +37,13 @@ export default function AdminDashboard() {
 
   const getReplies = (parentId: string) => allPosts.filter((p) => p.parent_id === parentId);
 
+  const toggleExpand = (id: string) => {
+    const newSet = new Set(expandedPosts);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setExpandedPosts(newSet);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
 
@@ -43,7 +51,6 @@ export default function AdminDashboard() {
     const { error } = await supabaseBrowser.from(table).delete().eq('id', id);
 
     if (error) {
-      console.error('Delete error:', error);
       alert('Delete failed: ' + error.message);
     } else {
       alert('✅ Post deleted successfully');
@@ -117,6 +124,7 @@ export default function AdminDashboard() {
             <span className="text-white">Filter by category:</span>
             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-white/90 text-black px-6 py-3 rounded-3xl">
               <option value="All Categories">All Categories</option>
+              <option value="General">General</option>
               <option value="Ap/Esp">Ap/Esp</option>
               <option value="Arabic">Arabic</option>
               <option value="English">English</option>
@@ -149,6 +157,7 @@ export default function AdminDashboard() {
             <tbody>
               {filteredMainPosts.map((post) => {
                 const replies = getReplies(post.id);
+                const isExpanded = expandedPosts.has(post.id);
                 return (
                   <>
                     <tr key={post.id} className="border-t">
@@ -156,7 +165,17 @@ export default function AdminDashboard() {
                       <td className="p-6 text-black">{post.category}</td>
                       <td className="p-6 text-black">
                         <strong>{post.title || 'Untitled'}</strong>
-                        <p className="text-gray-700 text-sm mt-1 line-clamp-2">{post.content}</p>
+                        <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                          {post.content}
+                        </p>
+                        {post.content && post.content.length > 120 && (
+                          <button
+                            onClick={() => toggleExpand(post.id)}
+                            className="text-blue-600 text-xs mt-2 hover:underline flex items-center gap-1"
+                          >
+                            {isExpanded ? '▲ Read less' : '▼ Read more'}
+                          </button>
+                        )}
                       </td>
                       <td className="p-6 text-center text-black">{post.upvotes || 0}</td>
                       <td className="p-6 text-center text-black">{post.downvotes || 0}</td>
