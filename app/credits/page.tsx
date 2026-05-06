@@ -50,11 +50,9 @@ export default function CreditsPage() {
           <h2 className="text-3xl font-semibold mb-6">Special Thanks</h2>
           <div className="text-lg leading-relaxed space-y-6">
             <p>
-              To <strong>Dr. Rommel E. Pelayo</strong>, our Principal, to the school for their guidance, support, 
-              and encouragement throughout this project.
-            </p><p>
-              To <strong>Dr. Allan T. Cariaga, Ph.D.</strong>, VP for Academics, for his guidance, encouragement, 
-              and continuous support throughout the entire research and development process.
+            We would like to express our deepest gratitude to The Philippine School Dubai administration for their full support in making this research possible. 
+              We are deeply grateful to our <strong>Principal, Dr. Rommel E. Pelayo</strong>, and our <strong>cVice Principal, Dr. Allan T. Cariaga</strong>, for their continuous guidance, trust, and encouragement throughout this research journey
+
             </p>
             <p>
           
