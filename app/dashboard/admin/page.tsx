@@ -11,7 +11,12 @@ export default function AdminDashboard() {
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<{ [key: string]: string }>({});
-  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());   // ← New state for expandable questions
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
+
+  // NEW: Current user + Reply edit states
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editReplyContent, setEditReplyContent] = useState('');
 
   const getTableName = () => activeTab;
 
@@ -25,6 +30,11 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
     fetchPosts();
   }, [activeTab]);
 
@@ -44,6 +54,7 @@ export default function AdminDashboard() {
     setExpandedPosts(newSet);
   };
 
+  // Delete any main post (existing)
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this post permanently?')) return;
 
@@ -56,6 +67,34 @@ export default function AdminDashboard() {
       alert('✅ Post deleted successfully');
       fetchPosts();
     }
+  };
+
+  // NEW: Edit own reply
+  const startEditReply = (reply: any) => {
+    setEditingReplyId(reply.id);
+    setEditReplyContent(reply.content || '');
+  };
+
+  const saveEditReply = async () => {
+    if (!editingReplyId) return;
+
+    const table = getTableName();
+    const { error } = await supabaseBrowser
+      .from(table)
+      .update({ content: editReplyContent })
+      .eq('id', editingReplyId);
+
+    if (error) {
+      alert('Failed to update reply: ' + error.message);
+    } else {
+      alert('✅ Reply updated successfully');
+      setEditingReplyId(null);
+      fetchPosts();
+    }
+  };
+
+  const cancelEditReply = () => {
+    setEditingReplyId(null);
   };
 
   const handleReply = async (postId: string) => {
@@ -190,13 +229,44 @@ export default function AdminDashboard() {
                       </td>
                     </tr>
 
-                    {replies.map((reply) => (
-                      <tr key={reply.id} className="bg-gray-50 border-t">
-                        <td className="p-6 text-gray-500 pl-12">↳ Reply</td>
-                        <td className="p-6 text-gray-500"></td>
-                        <td className="p-6 text-gray-700" colSpan={4}>{reply.content}</td>
-                      </tr>
-                    ))}
+                    {/* Replies */}
+                    {replies.map((reply) => {
+                      const isOwnReply = currentUserId && reply.author_id === currentUserId;
+                      const isEditingThisReply = editingReplyId === reply.id;
+
+                      return (
+                        <tr key={reply.id} className="bg-gray-50 border-t">
+                          <td className="p-6 text-gray-500 pl-12">↳ Reply</td>
+                          <td className="p-6 text-gray-500"></td>
+                          <td className="p-6 text-gray-700" colSpan={3}>
+                            {isEditingThisReply ? (
+                              <div>
+                                <textarea
+                                  value={editReplyContent}
+                                  onChange={(e) => setEditReplyContent(e.target.value)}
+                                  rows={2}
+                                  className="w-full p-3 rounded-2xl border text-black"
+                                />
+                                <div className="flex gap-3 mt-3">
+                                  <button onClick={saveEditReply} className="bg-green-600 text-white px-5 py-2 rounded-3xl text-sm">Save</button>
+                                  <button onClick={cancelEditReply} className="bg-gray-500 text-white px-5 py-2 rounded-3xl text-sm">Cancel</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p>{reply.content}</p>
+                            )}
+                          </td>
+                          <td className="p-6 text-center flex gap-3">
+                            {isOwnReply && !isEditingThisReply && (
+                              <>
+                                <button onClick={() => startEditReply(reply)} className="text-blue-600 hover:text-blue-700">✏️</button>
+                                <button onClick={() => handleDelete(reply.id)} className="text-red-600 hover:text-red-700">🗑️</button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
 
                     {replyingToId === post.id && (
                       <tr>
