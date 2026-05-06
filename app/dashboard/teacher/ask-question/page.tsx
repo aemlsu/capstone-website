@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation';
 
 export default function AskQuestionPage() {
   const router = useRouter();
-  const [questions, setQuestions] = useState<any[]>([]);
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [category, setCategory] = useState('General');   // ← default is now General
+  const [category, setCategory] = useState('General');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
@@ -21,14 +21,34 @@ export default function AskQuestionPage() {
   };
 
   useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
     fetchQuestions();
   }, []);
 
-  // Main questions only
   const mainQuestions = allPosts.filter((post) => !post.parent_id);
 
   const getReplies = (parentId: string) => {
     return allPosts.filter((p) => p.parent_id === parentId);
+  };
+
+  // Delete handler - only own posts
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this question permanently?')) return;
+
+    const { error } = await supabaseBrowser
+      .from('questions')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Failed to delete: ' + error.message);
+    } else {
+      fetchQuestions();
+    }
   };
 
   const handlePostQuestion = async (e: React.FormEvent) => {
@@ -106,10 +126,22 @@ export default function AskQuestionPage() {
           ) : (
             mainQuestions.map((q) => {
               const replies = getReplies(q.id);
+              const isOwnPost = currentUserId && q.author_id === currentUserId;
+
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
                   {/* Main Question */}
-                  <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-2xl font-semibold text-black">{q.title || 'Untitled Question'}</h3>
+                    {isOwnPost && (
+                      <button
+                        onClick={() => handleDelete(q.id)}
+                        className="text-red-600 hover:text-red-700 text-xl"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
                   <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
                   <p className="text-xs text-gray-500 mt-6">
                     Posted in <span className="font-medium">{q.category}</span>
