@@ -86,7 +86,7 @@ export default function CreditsPage() {
 
           <h2 className="text-3xl font-semibold mt-12 mb-6">Website Development</h2>
           <p className="text-lg leading-relaxed">
-            Built by <strong>Mark Samuel M. Suquila, Calyx Zamira G. Garduque, & Angel Zena D. Ross Galon</strong> with the assistance of Grok (xAI) as the AI development partner.
+            Built by <strong>Mark Samuel M. Suquila, Calyx Zamira G. Garduque, & Angel Zena Ross D. Galon</strong> with the assistance of Grok (xAI) as the AI development partner.
           </p>
              <img src="/images/credits.jpg" alt="The Researchers" />
 
