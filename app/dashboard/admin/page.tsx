@@ -30,7 +30,7 @@ export default function AdminDashboard() {
     }
 
     const { data } = await query
-      .order('is_pinned', { ascending: false })   // ← pinned first
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false });
     setAllPosts(data || []);
   };
@@ -60,7 +60,6 @@ export default function AdminDashboard() {
     setExpandedPosts(newSet);
   };
 
-  // NEW: Pin / Unpin handler
   const handlePin = async (id: string) => {
     const table = getTableName();
     const post = allPosts.find(p => p.id === id);
@@ -227,8 +226,6 @@ export default function AdminDashboard() {
                     <th className="text-left p-6 text-black">Date</th>
                     <th className="text-left p-6 text-black">Category</th>
                     <th className="text-left p-6 text-black">Title / Content</th>
-                    <th className="text-center p-6 text-black">Up</th>
-                    <th className="text-center p-6 text-black">Down</th>
                     <th className="text-center p-6 text-black">Actions</th>
                   </>
                 )}
@@ -269,8 +266,6 @@ export default function AdminDashboard() {
                             </button>
                           )}
                         </td>
-                        <td className="p-6 text-center text-black">{post.upvotes || 0}</td>
-                        <td className="p-6 text-center text-black">{post.downvotes || 0}</td>
                         <td className="p-6 text-center flex gap-4 justify-center">
                           <button onClick={() => setReplyingToId(replyingToId === post.id ? null : post.id)} className="text-blue-600 hover:text-blue-700 font-medium">
                             {replyingToId === post.id ? 'Cancel' : 'Reply'}
@@ -285,7 +280,6 @@ export default function AdminDashboard() {
                         </td>
                       </tr>
 
-                      {/* Replies section unchanged */}
                       {replies.map((reply) => {
                         const isOwnReply = currentUserId && reply.author_id === currentUserId;
                         const isEditingThisReply = editingReplyId === reply.id;
@@ -293,7 +287,7 @@ export default function AdminDashboard() {
                           <tr key={reply.id} className="bg-gray-50 border-t">
                             <td className="p-6 text-gray-500 pl-12">↳ Reply</td>
                             <td className="p-6 text-gray-500"></td>
-                            <td className="p-6 text-gray-700" colSpan={3}>
+                            <td className="p-6 text-gray-700" colSpan={2}>
                               {isEditingThisReply ? (
                                 <div>
                                   <textarea value={editReplyContent} onChange={(e) => setEditReplyContent(e.target.value)} rows={2} className="w-full p-3 rounded-2xl border text-black" />
@@ -320,7 +314,7 @@ export default function AdminDashboard() {
 
                       {replyingToId === post.id && (
                         <tr>
-                          <td colSpan={6} className="p-6 bg-white/70">
+                          <td colSpan={5} className="p-6 bg-white/70">
                             <textarea value={replyContent[post.id] || ''} onChange={(e) => setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))} rows={3} className="w-full p-4 rounded-2xl border text-black" placeholder="Write your reply here..." />
                             <div className="flex gap-4 mt-4">
                               <button onClick={() => { setReplyContent(prev => ({ ...prev, [post.id]: '' })); setReplyingToId(null); }} className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-2xl">Cancel</button>
