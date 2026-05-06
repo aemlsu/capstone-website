@@ -13,30 +13,7 @@ export default function AboutPage() {
             </p>
 
             <h2 className="text-4xl font-semibold text-black mb-8">School Leadership Team</h2>
-
-            {/* HoD Table */}
-            <h3 className="text-2xl font-semibold text-black mb-4">Heads of Department (HoD)</h3>
-            <table className="w-full border-collapse mb-16">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-6 py-4 text-left">Position</th>
-                  <th className="border border-gray-300 px-6 py-4 text-left">Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – AP/EsP</td><td className="border border-gray-300 px-6 py-4">Mr. Rafael B. Carlos</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – Arabic</td><td className="border border-gray-300 px-6 py-4">Ms. Mai Salim Alfakharany</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – English</td><td className="border border-gray-300 px-6 py-4">Ms. Rhea P. Rosete</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – Filipino</td><td className="border border-gray-300 px-6 py-4">Mr. Jessie Y. De Guzman</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – ICT/TLE</td><td className="border border-gray-300 px-6 py-4">M. John Anthony V. Bonayon</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – MAPEH</td><td className="border border-gray-300 px-6 py-4">Ms. Maebel C. Able</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – Math</td><td className="border border-gray-300 px-6 py-4">Mr. Wilson Q. Rebusa</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – MSCS</td><td className="border border-gray-300 px-6 py-4">Mr. Roque P. Caniban</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – Science</td><td className="border border-gray-300 px-6 py-4">Ms. Madonna N. Timbang</td></tr>
-              </tbody>
-            </table>
-
-            {/* School Administration */}
+   {/* School Administration */}
             <h3 className="text-2xl font-semibold text-black mb-4">School Administration</h3>
             <table className="w-full border-collapse mb-16">
               <thead>
@@ -50,7 +27,7 @@ export default function AboutPage() {
                 <tr><td className="border border-gray-300 px-6 py-4">Vice Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Allan T. Cariaga</td></tr>
               </tbody>
             </table>
- {/* KG & Lower Grades */}
+                
             <h3 className="text-2xl font-semibold text-black mb-4">Head of Cycles (HoC)</h3>
             <table className="w-full border-collapse">
               <thead>
@@ -64,6 +41,28 @@ export default function AboutPage() {
             <tr><td className="border border-gray-300 px-6 py-4">HoC – Cycles 3 &amp; 4</td><td className="border border-gray-300 px-6 py-4">Ms. Marites P. Rodriguez</td></tr>
               </tbody>
             </table>
+            {/* HoD Table */}
+            <h3 className="text-2xl font-semibold text-black mb-4">Heads of Department (HoD)</h3>
+            <table className="w-full border-collapse mb-16">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 px-6 py-4 text-left">Position</th>
+                  <th className="border border-gray-300 px-6 py-4 text-left">Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – AP/EsP</td><td className="border border-gray-300 px-6 py-4">Mr. Rafael B. Carlos</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – English</td><td className="border border-gray-300 px-6 py-4">Ms. Rhea P. Rosete</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – Filipino</td><td className="border border-gray-300 px-6 py-4">Mr. Jessie Y. De Guzman</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – ICT/TLE</td><td className="border border-gray-300 px-6 py-4">M. John Anthony V. Bonayon</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – MAPEH</td><td className="border border-gray-300 px-6 py-4">Ms. Maebel C. Able</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – Math</td><td className="border border-gray-300 px-6 py-4">Mr. Wilson Q. Rebusa</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – MSCS</td><td className="border border-gray-300 px-6 py-4">Mr. Roque P. Caniban</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – Science</td><td className="border border-gray-300 px-6 py-4">Ms. Madonna N. Timbang</td></tr>
+              </tbody>
+            </table>
+
+     
             {/* KG & Lower Grades */}
             <h3 className="text-2xl font-semibold text-black mb-4"> Kindergarten &amp; Lower Grades</h3>
             <table className="w-full border-collapse">
