@@ -66,21 +66,11 @@ export default function CreditsPage() {
             <p>
             </p>
             <p>
-              To Mr. Michael Aniag (Librarian) for providing a comfortable space for the interviews.
-            </p>
-            <p>
-              To the expert validators: Ms. Queen Irish C. Alagad, Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, 
-              Ms. Rhea P. Rosete, and Ms. Emelita D. Urbano.
-            </p>
-            <p>
-              To the SHS Research Ethics Committee: Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, and Ms. Richelle A. Costa.
-            </p>
-            <p>
-              To our families, friends, and loved ones for their unwavering support and encouragement.
+            
             </p>
             <p className="font-medium">
               Above all, to God for the strength, guidance, and perseverance that made this study possible. 
-              To God be all the glory. Shukraan po!
+              To God be all the glory. Shukran po!
             </p>
           </div>
 
