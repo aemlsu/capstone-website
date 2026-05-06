@@ -64,14 +64,14 @@ export default function CreditsPage() {
             <p>
             </p>
             <p>
-              To Mr. Michael Aniag (Librarian) for providing a comfortable space for the interviews.
+              To <strong>Mr. Michael Aniag</strong> (Librarian) for providing a comfortable space for the interviews.
             </p>
             <p>
-              To the expert validators: Ms. Queen Irish C. Alagad, Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, 
-              Ms. Rhea P. Rosete, and Ms. Emelita D. Urbano.
+              To the expert validators: <strong>Ms. Queen Irish C. Alagad</strong>, <strong>Ms. Cathleen L. Castro</strong>,<strong> Ms. Bianca Camille P. Mistal</strong>, 
+              <strong>Ms. Rhea P. Rosete<strong>, and <strong>Ms. Emelita D. Urbano<strong>.
             </p>
             <p>
-              To the SHS Research Ethics Committee: Ms. Cathleen L. Castro, Ms. Bianca Camille P. Mistal, and Ms. Richelle A. Costa.
+              To the SHS Research Ethics Committee: <strong>Ms. Cathleen L. Castro</strong>, <strong>Ms. Bianca Camille P. Mistal</strong>, and <strong>Ms. Richelle A. Costa</strong>.
             </p>
             <p>
               To our families, friends, and loved ones for their unwavering support and encouragement.
