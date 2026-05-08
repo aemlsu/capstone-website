@@ -37,13 +37,6 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
 
-    // SAFETY: School Admin can ONLY be created via SQL
-    if (activeTab === 'school_admin') {
-      setError('School Admin accounts can only be created manually via SQL.');
-      setLoading(false);
-      return;
-    }
-
     const { error: signUpError } = await supabaseBrowser.auth.signUp({
       email,
       password,
@@ -72,7 +65,7 @@ export default function SignupPage() {
         <h1 className="text-4xl font-bold text-center text-black mb-2">Create Account</h1>
         <p className="text-center text-gray-600 mb-8">Join TPS EduShift Support</p>
 
-        {/* Role Tabs - School Admin removed (only Teacher, HoD, HoC allowed) */}
+        {/* Role Tabs */}
         <div className="flex bg-gray-100 rounded-3xl p-1 mb-8">
           <button onClick={() => setActiveTab('teacher')} className={`flex-1 py-4 text-sm font-medium rounded-3xl transition-all ${activeTab === 'teacher' ? 'bg-white shadow-sm text-black' : 'text-gray-700 hover:bg-gray-200'}`}>Teacher</button>
           <button onClick={() => setActiveTab('hod')} className={`flex-1 py-4 text-sm font-medium rounded-3xl transition-all ${activeTab === 'hod' ? 'bg-white shadow-sm text-black' : 'text-gray-700 hover:bg-gray-200'}`}>HoD</button>
