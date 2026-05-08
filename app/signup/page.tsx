@@ -103,8 +103,8 @@ export default function SignupPage() {
               onChange={(e) => setSubRole(e.target.value as 'hod' | 'hoc' | 'school_admin')}
               className="w-full border border-gray-300 rounded-3xl px-6 py-4 text-black focus:outline-none focus:border-blue-500"
             >
-              <option value="hod">HoD</option>
-              <option value="hoc">HoC</option>
+              <option value="hod">Head Of Department</option>
+              <option value="hoc">Head Of Cycle</option>
               <option value="school_admin">School Admin</option>
             </select>
           </div>
