@@ -26,7 +26,6 @@ export default function AdminDashboard() {
 
     let query = supabaseBrowser.from(table).select('*');
 
-    // Monthly Reflections filter
     if (activeTab === 'reflections' && reflectionSubTab === 'monthly') {
       query = query.like('title', 'Monthly%');
       if (monthFilter !== 'All Months') {
@@ -52,11 +51,9 @@ export default function AdminDashboard() {
 
   const mainPosts = allPosts.filter((post) => !post.parent_id);
 
-  // FIXED: Proper separation between Normal and Monthly Reflections
   const filteredMainPosts = mainPosts.filter((post) => {
     if (activeTab === 'reflections') {
-      if (reflectionSubTab === 'monthly') return true; // already filtered in query
-      // Normal Reflections = exclude anything that starts with "Monthly"
+      if (reflectionSubTab === 'monthly') return true;
       return !post.title?.startsWith('Monthly');
     }
     if (categoryFilter === 'All Categories') return true;
@@ -178,15 +175,13 @@ export default function AdminDashboard() {
           <button onClick={() => { setActiveTab('self_assessments'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'self_assessments' ? 'border-b-4 border-blue-600' : ''}`}>Self Assessments</button>
         </div>
 
-        {/* Sub-tabs inside Reflections - Improved styling */}
+        {/* Sub-tabs inside Reflections */}
         {activeTab === 'reflections' && (
           <div className="flex gap-2 mb-6 border-b pb-2">
             <button
               onClick={() => setReflectionSubTab('normal')}
               className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${
-                reflectionSubTab === 'normal' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                reflectionSubTab === 'normal' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Normal Reflections
@@ -194,9 +189,7 @@ export default function AdminDashboard() {
             <button
               onClick={() => setReflectionSubTab('monthly')}
               className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${
-                reflectionSubTab === 'monthly' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                reflectionSubTab === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Monthly Reflections
@@ -247,7 +240,7 @@ export default function AdminDashboard() {
           <button onClick={exportCSV} className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-3xl flex items-center gap-2">↓ Export Current Tab as CSV</button>
         </div>
 
-        {/* Table - unchanged */}
+        {/* Table - only title display changed */}
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
           <table className="w-full">
             <thead>
@@ -298,7 +291,10 @@ export default function AdminDashboard() {
                         <td className="p-6 text-black">{post.category}</td>
                         <td className="p-6 text-black">
                           {post.is_pinned && <span className="text-amber-500 mr-2">📌</span>}
-                          <strong>{post.title || 'Untitled'}</strong>
+                          {/* CHANGED: Made question title bolder + added space for Monthly Reflection */}
+                          <strong className="font-bold text-black text-lg block">
+                            {post.title || 'Untitled'}
+                          </strong>
                           <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
                             {post.content}
                           </p>
