@@ -24,12 +24,11 @@ export default function AdminDashboard() {
   const fetchPosts = async () => {
     const table = getTableName();
 
-    // Always start with a fresh query
     let query = supabaseBrowser.from(table).select('*');
 
-    // Only apply Monthly Reflections filter when that sub-tab is active
+    // Monthly Reflections filter
     if (activeTab === 'reflections' && reflectionSubTab === 'monthly') {
-      query = query.like('title', 'Monthly%');           // change to .eq('month', monthFilter) if you have a month column
+      query = query.like('title', 'Monthly%');
       if (monthFilter !== 'All Months') {
         query = query.eq('month', monthFilter);
       }
@@ -53,8 +52,13 @@ export default function AdminDashboard() {
 
   const mainPosts = allPosts.filter((post) => !post.parent_id);
 
+  // FIXED: Proper separation between Normal and Monthly Reflections
   const filteredMainPosts = mainPosts.filter((post) => {
-    if (activeTab === 'reflections' && reflectionSubTab === 'monthly') return true;
+    if (activeTab === 'reflections') {
+      if (reflectionSubTab === 'monthly') return true; // already filtered in query
+      // Normal Reflections = exclude anything that starts with "Monthly"
+      return !post.title?.startsWith('Monthly');
+    }
     if (categoryFilter === 'All Categories') return true;
     return post.category === categoryFilter;
   });
@@ -174,18 +178,26 @@ export default function AdminDashboard() {
           <button onClick={() => { setActiveTab('self_assessments'); setReplyingToId(null); }} className={`px-8 py-4 text-xl font-medium ${activeTab === 'self_assessments' ? 'border-b-4 border-blue-600' : ''}`}>Self Assessments</button>
         </div>
 
-        {/* Sub-tabs inside Reflections */}
+        {/* Sub-tabs inside Reflections - Improved styling */}
         {activeTab === 'reflections' && (
           <div className="flex gap-2 mb-6 border-b pb-2">
             <button
               onClick={() => setReflectionSubTab('normal')}
-              className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${reflectionSubTab === 'normal' ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${
+                reflectionSubTab === 'normal' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
             >
               Normal Reflections
             </button>
             <button
               onClick={() => setReflectionSubTab('monthly')}
-              className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${reflectionSubTab === 'monthly' ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`px-6 py-2 rounded-3xl text-sm font-medium transition-all ${
+                reflectionSubTab === 'monthly' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
             >
               Monthly Reflections
             </button>
