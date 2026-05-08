@@ -44,7 +44,7 @@ export default function SignupPage() {
         data: {
           full_name: fullName,
           role: activeTab,
-          department: department,
+          department: activeTab === 'hoc' ? null : department,   // ← Only send department for Teacher & HoD
         },
       },
     });
@@ -88,21 +88,24 @@ export default function SignupPage() {
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border border-gray-300 rounded-3xl px-6 py-4 text-black focus:outline-none focus:border-blue-500" required />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Department / Subject</label>
-            <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full border border-gray-300 rounded-3xl px-6 py-4 text-black focus:outline-none focus:border-blue-500">
-              <option value="Ap/Esp">Ap/Esp</option>
-              <option value="English">English</option>
-              <option value="Filipino">Filipino</option>
-              <option value="ICT/TLE">ICT/TLE</option>
-              <option value="MAPEH">MAPEH</option>
-              <option value="Math">Math</option>
-              <option value="MSCS">MSCS</option>
-              <option value="Science">Science</option>
-              <option value="KG">KG</option>
-              <option value="G1 & G2">G1 & G2</option>
-            </select>
-          </div>
+          {/* Department field removed for HoC */}
+          {(activeTab === 'teacher' || activeTab === 'hod') && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Department / Subject</label>
+              <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full border border-gray-300 rounded-3xl px-6 py-4 text-black focus:outline-none focus:border-blue-500">
+                <option value="Ap/Esp">Ap/Esp</option>
+                <option value="English">English</option>
+                <option value="Filipino">Filipino</option>
+                <option value="ICT/TLE">ICT/TLE</option>
+                <option value="MAPEH">MAPEH</option>
+                <option value="Math">Math</option>
+                <option value="MSCS">MSCS</option>
+                <option value="Science">Science</option>
+                <option value="KG">KG</option>
+                <option value="G1 & G2">G1 & G2</option>
+              </select>
+            </div>
+          )}
 
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
 
