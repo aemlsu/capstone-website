@@ -1,11 +1,44 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { supabaseBrowser } from '@/lib/supabase';
 
 export default function HomePage() {
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabaseBrowser.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabaseBrowser
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role === 'teacher') {
+          router.push('/dashboard/teacher');
+        } else {
+          router.push('/dashboard/admin');
+        }
+      } else {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">
@@ -41,7 +74,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Tutorial Video Section - YouTube (unlimited size) */}
+        {/* Tutorial Video Section */}
         <div className="py-20 bg-white/10 backdrop-blur-md border-t border-white/20">
           <div className="max-w-5xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold text-white mb-4">
