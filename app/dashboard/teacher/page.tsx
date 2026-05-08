@@ -21,7 +21,7 @@ export default function TeacherDashboard() {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
       if (!user) return;
 
-      // Update current user's last_seen (this marks them as "online")
+      // Mark current user as online
       await supabaseBrowser
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
@@ -58,24 +58,24 @@ export default function TeacherDashboard() {
     fetchMyPosts();
 
     const fetchOnlineUsers = async () => {
-      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      // ONLY show users active in the LAST 2 MINUTES
+      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
 
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
         .in('role', ['hod', 'HoD', 'hoc', 'HoC'])
-        .gt('last_seen', tenMinutesAgo)
+        .gt('last_seen', twoMinutesAgo)
         .order('full_name');
 
-      console.log('🔴 Real-time Online HoD/HoC:', data);
+      console.log('🔴 Currently Online HoD/HoC:', data);
       setOnlineUsers(data || []);
     };
 
     fetchOnlineUsers();
 
-    // Refresh online status every 30 seconds
+    // Refresh every 30 seconds
     const interval = setInterval(fetchOnlineUsers, 30000);
-
     return () => clearInterval(interval);
   }, [router]);
 
@@ -105,7 +105,6 @@ export default function TeacherDashboard() {
     } else {
       alert('✅ Question posted successfully!');
       setQuestionContent('');
-      // Refresh my posts
       const { data: userData } = await supabaseBrowser.auth.getUser();
       if (userData.user) {
         const { data: newPosts } = await supabaseBrowser
@@ -139,7 +138,7 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="grid grid-cols-12 gap-8 items-stretch">
-          {/* LEFT: Online Status - NOW REAL-TIME */}
+          {/* LEFT: Online Status - NOW STRICT 2-MINUTE WINDOW */}
           <div className="col-span-2">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black mb-5 text-lg">Online Status</h4>
@@ -162,7 +161,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* CENTER: 1x4 cards */}
+          {/* CENTER: 1x4 cards (kept your current layout) */}
           <div className="col-span-7 grid grid-cols-4 gap-6">
             <Link href="/dashboard/teacher/ask-question" className="group">
               <div className="bg-[#f8e4c2] hover:bg-[#f5d9a8] transition rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center h-full">
@@ -212,7 +211,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* BOTTOM SECTION - unchanged */}
+        {/* Bottom sections unchanged */}
         <div className="grid grid-cols-12 gap-8 mt-16">
           <div className="col-span-6 space-y-8">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
