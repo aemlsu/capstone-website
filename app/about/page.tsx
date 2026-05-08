@@ -23,7 +23,7 @@ export default function AboutPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr><td className="border border-gray-300 px-6 py-4">Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Romel E. Pelayo</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Rommel E. Pelayo</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">Vice Principal</td><td className="border border-gray-300 px-6 py-4">Dr. Allan T. Cariaga</td></tr>
               </tbody>
             </table>
@@ -56,7 +56,7 @@ export default function AboutPage() {
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – AP/EsP</td><td className="border border-gray-300 px-6 py-4">Mr. Rafael B. Carlos</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – English</td><td className="border border-gray-300 px-6 py-4">Ms. Rhea P. Rosete</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – Filipino</td><td className="border border-gray-300 px-6 py-4">Mr. Jessie Y. De Guzman</td></tr>
-                <tr><td className="border border-gray-300 px-6 py-4">HoD – ICT/TLE</td><td className="border border-gray-300 px-6 py-4">M. John Anthony V. Bonayon</td></tr>
+                <tr><td className="border border-gray-300 px-6 py-4">HoD – ICT/TLE</td><td className="border border-gray-300 px-6 py-4">Mr. John Anthony V. Bonayon</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – MAPEH</td><td className="border border-gray-300 px-6 py-4">Ms. Maebel C. Able</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – Math</td><td className="border border-gray-300 px-6 py-4">Mr. Wilson Q. Rebusa</td></tr>
                 <tr><td className="border border-gray-300 px-6 py-4">HoD – MSCS</td><td className="border border-gray-300 px-6 py-4">Mr. Roque P. Caniban</td></tr>
