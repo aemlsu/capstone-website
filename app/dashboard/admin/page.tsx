@@ -60,13 +60,17 @@ export default function AdminDashboard() {
     return post.category === categoryFilter;
   });
 
-  // NEW: Helper to bold Q1, Q2, Q3 in monthly reflections
+  // IMPROVED: Bold Q1/Q2/Q3 + bold the actual question text + add spacing
   const formatContent = (content: string) => {
-    if (!content) return content;
+    if (!content) return '';
     return content
-      .replace(/Q1:/g, '<strong>Q1:</strong>')
-      .replace(/Q2:/g, '<strong>Q2:</strong>')
-      .replace(/Q3:/g, '<strong>Q3:</strong>');
+      .replace(/Q1:/g, '<br><br><strong>Q1:</strong>')
+      .replace(/Q2:/g, '<br><br><strong>Q2:</strong>')
+      .replace(/Q3:/g, '<br><br><strong>Q3:</strong>')
+      // Bold the question text itself (everything after QX: until the next Q or end)
+      .replace(/<strong>Q1:<\/strong>(.*?)(?=<strong>Q2:|$)/g, '<strong>Q1:</strong> <strong>$1</strong>')
+      .replace(/<strong>Q2:<\/strong>(.*?)(?=<strong>Q3:|$)/g, '<strong>Q2:</strong> <strong>$1</strong>')
+      .replace(/<strong>Q3:<\/strong>(.*?)$/g, '<strong>Q3:</strong> <strong>$1</strong>');
   };
 
   const getReplies = (parentId: string) => allPosts.filter((p) => p.parent_id === parentId);
@@ -249,7 +253,7 @@ export default function AdminDashboard() {
           <button onClick={exportCSV} className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-3xl flex items-center gap-2">↓ Export Current Tab as CSV</button>
         </div>
 
-        {/* Table - only the content display was changed */}
+        {/* Table */}
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
           <table className="w-full">
             <thead>
@@ -386,11 +390,15 @@ export default function AdminDashboard() {
   );
 }
 
-// Small helper to bold Q1, Q2, Q3 (only used for monthly reflections)
+// Helper to bold questions + add spacing
 const formatContent = (content: string) => {
   if (!content) return '';
   return content
-    .replace(/Q1:/g, '<strong>Q1:</strong>')
-    .replace(/Q2:/g, '<strong>Q2:</strong>')
-    .replace(/Q3:/g, '<strong>Q3:</strong>');
+    .replace(/Q1:/g, '<br><br><strong>Q1:</strong>')
+    .replace(/Q2:/g, '<br><br><strong>Q2:</strong>')
+    .replace(/Q3:/g, '<br><br><strong>Q3:</strong>')
+    // Bold the entire question text as well
+    .replace(/<strong>Q1:<\/strong>(.*?)(?=<strong>Q2:|$)/g, '<strong>Q1:</strong> <strong>$1</strong>')
+    .replace(/<strong>Q2:<\/strong>(.*?)(?=<strong>Q3:|$)/g, '<strong>Q2:</strong> <strong>$1</strong>')
+    .replace(/<strong>Q3:<\/strong>(.*?)$/g, '<strong>Q3:</strong> <strong>$1</strong>');
 };
