@@ -11,7 +11,6 @@ export default function TeacherDashboard() {
   const [myPosts, setMyPosts] = useState<any[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
 
-  // Quick Ask Question State
   const [questionContent, setQuestionContent] = useState('');
   const [questionCategory, setQuestionCategory] = useState('Ap/Esp');
   const [submitting, setSubmitting] = useState(false);
@@ -21,13 +20,11 @@ export default function TeacherDashboard() {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
       if (!user) return;
 
-      // Mark current user as online
       await supabaseBrowser
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
         .eq('id', user.id);
 
-      // Load name
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name')
@@ -58,23 +55,21 @@ export default function TeacherDashboard() {
     fetchMyPosts();
 
     const fetchOnlineUsers = async () => {
-      // ONLY show users active in the LAST 2 MINUTES
-      const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+      // STRICT: Only users active in the last 60 seconds
+      const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
 
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
         .in('role', ['hod', 'HoD', 'hoc', 'HoC'])
-        .gt('last_seen', twoMinutesAgo)
+        .gt('last_seen', oneMinuteAgo)
         .order('full_name');
 
-      console.log('🔴 Currently Online HoD/HoC:', data);
+      console.log('🔴 Currently Online:', data);
       setOnlineUsers(data || []);
     };
 
     fetchOnlineUsers();
-
-    // Refresh every 30 seconds
     const interval = setInterval(fetchOnlineUsers, 30000);
     return () => clearInterval(interval);
   }, [router]);
@@ -85,7 +80,6 @@ export default function TeacherDashboard() {
 
     setSubmitting(true);
     const { data: { user } } = await supabaseBrowser.auth.getUser();
-
     if (!user) {
       alert('Please log in first');
       setSubmitting(false);
@@ -125,7 +119,6 @@ export default function TeacherDashboard() {
       <div className="fixed inset-0 bg-black/40 z-[-1]" />
 
       <div className="max-w-[1380px] mx-auto px-10 py-10">
-        {/* Header */}
         <div className="flex justify-between items-start mb-10">
           <div>
             <h1 className="text-6xl font-bold text-white drop-shadow-2xl">HELLO, {userName.toUpperCase()}!</h1>
@@ -138,20 +131,18 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="grid grid-cols-12 gap-8 items-stretch">
-          {/* LEFT: Online Status - NOW STRICT 2-MINUTE WINDOW */}
+          {/* ONLINE STATUS - SMALLER TEXT + STRICT 60-SECOND WINDOW */}
           <div className="col-span-2">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black mb-5 text-lg">Online Status</h4>
               <div className="space-y-4">
                 {onlineUsers.length > 0 ? (
                   onlineUsers.map((u: any) => (
-                    <div key={u.full_name} className="flex justify-between items-center">
+                    <div key={u.full_name} className="flex justify-between items-center text-sm">
                       <span className="text-black">
                         {u.role.toUpperCase()} - {u.full_name}
                       </span>
-                      <span className="bg-green-500 text-white text-xs px-4 py-1 rounded-3xl font-medium">
-                        ● Online
-                      </span>
+                      <span className="bg-green-500 text-white text-xs px-3 py-0.5 rounded-3xl font-medium">● Online</span>
                     </div>
                   ))
                 ) : (
@@ -161,7 +152,7 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* CENTER: 1x4 cards (kept your current layout) */}
+          {/* The rest of your dashboard remains the same */}
           <div className="col-span-7 grid grid-cols-4 gap-6">
             <Link href="/dashboard/teacher/ask-question" className="group">
               <div className="bg-[#f8e4c2] hover:bg-[#f5d9a8] transition rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center h-full">
@@ -189,7 +180,6 @@ export default function TeacherDashboard() {
             </Link>
           </div>
 
-          {/* RIGHT: Resource Access */}
           <div className="col-span-3">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black mb-6 text-xl">Resource Access</h4>
@@ -211,7 +201,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Bottom sections unchanged */}
+        {/* Bottom section unchanged */}
         <div className="grid grid-cols-12 gap-8 mt-16">
           <div className="col-span-6 space-y-8">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
@@ -221,11 +211,7 @@ export default function TeacherDashboard() {
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {myPosts.map((post) => (
-                    <div 
-                      key={post.id} 
-                      className="bg-white rounded-2xl p-5 border cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all"
-                      onClick={() => router.push('/dashboard/teacher/ask-question')}
-                    >
+                    <div key={post.id} className="bg-white rounded-2xl p-5 border cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all" onClick={() => router.push('/dashboard/teacher/ask-question')}>
                       <p className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()} • {post.category}</p>
                       <p className="font-medium text-black line-clamp-3 mt-2">{post.title || post.content}</p>
                     </div>
