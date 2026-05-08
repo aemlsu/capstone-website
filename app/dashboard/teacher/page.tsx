@@ -17,18 +17,26 @@ export default function TeacherDashboard() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserAndUpdateStatus = async () => {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
-      if (user) {
-        const { data } = await supabaseBrowser
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-        setUserName(data?.full_name?.split(' ')[0] || 'Teacher');
-      }
+      if (!user) return;
+
+      // Update current user's last_seen (this marks them as "online")
+      await supabaseBrowser
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('id', user.id);
+
+      // Load name
+      const { data } = await supabaseBrowser
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      setUserName(data?.full_name?.split(' ')[0] || 'Teacher');
     };
-    loadUser();
+
+    loadUserAndUpdateStatus();
 
     const fetchMyPosts = async () => {
       const { data: userData } = await supabaseBrowser.auth.getUser();
@@ -50,17 +58,25 @@ export default function TeacherDashboard() {
     fetchMyPosts();
 
     const fetchOnlineUsers = async () => {
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
       const { data } = await supabaseBrowser
         .from('profiles')
         .select('full_name, role')
-        .in('role', ['hod', 'HoD'])
+        .in('role', ['hod', 'HoD', 'hoc', 'HoC'])
+        .gt('last_seen', tenMinutesAgo)
         .order('full_name');
 
-      console.log('🔍 Online Users fetched:', data);
+      console.log('🔴 Real-time Online HoD/HoC:', data);
       setOnlineUsers(data || []);
     };
+
     fetchOnlineUsers();
 
+    // Refresh online status every 30 seconds
+    const interval = setInterval(fetchOnlineUsers, 30000);
+
+    return () => clearInterval(interval);
   }, [router]);
 
   const handleQuickAsk = async (e: React.FormEvent) => {
@@ -89,6 +105,7 @@ export default function TeacherDashboard() {
     } else {
       alert('✅ Question posted successfully!');
       setQuestionContent('');
+      // Refresh my posts
       const { data: userData } = await supabaseBrowser.auth.getUser();
       if (userData.user) {
         const { data: newPosts } = await supabaseBrowser
@@ -122,7 +139,7 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="grid grid-cols-12 gap-8 items-stretch">
-          {/* LEFT: Online Status */}
+          {/* LEFT: Online Status - NOW REAL-TIME */}
           <div className="col-span-2">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black mb-5 text-lg">Online Status</h4>
@@ -130,12 +147,16 @@ export default function TeacherDashboard() {
                 {onlineUsers.length > 0 ? (
                   onlineUsers.map((u: any) => (
                     <div key={u.full_name} className="flex justify-between items-center">
-                      <span className="text-black">HoD - {u.full_name}</span>
-                      <span className="bg-green-500 text-white text-xs px-4 py-1 rounded-3xl">Online</span>
+                      <span className="text-black">
+                        {u.role.toUpperCase()} - {u.full_name}
+                      </span>
+                      <span className="bg-green-500 text-white text-xs px-4 py-1 rounded-3xl font-medium">
+                        ● Online
+                      </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-sm">No HoD accounts found</p>
+                  <p className="text-gray-500 text-sm">No HoD / HoC currently online</p>
                 )}
               </div>
             </div>
@@ -191,7 +212,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* BOTTOM: My Postings + Teaching Tools + Quick Question */}
+        {/* BOTTOM SECTION - unchanged */}
         <div className="grid grid-cols-12 gap-8 mt-16">
           <div className="col-span-6 space-y-8">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
@@ -201,7 +222,6 @@ export default function TeacherDashboard() {
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   {myPosts.map((post) => (
-                    // ONLY THIS PART WAS CHANGED
                     <div 
                       key={post.id} 
                       className="bg-white rounded-2xl p-5 border cursor-pointer hover:bg-gray-50 hover:shadow-md transition-all"
@@ -228,16 +248,11 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* Quick Question on the right */}
           <div className="col-span-6">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black text-2xl mb-6 text-center">Quick Question</h4>
               <form onSubmit={handleQuickAsk} className="space-y-6">
-                <select
-                  value={questionCategory}
-                  onChange={(e) => setQuestionCategory(e.target.value)}
-                  className="w-full bg-white border border-gray-300 rounded-3xl px-6 py-4 text-black text-lg"
-                >
+                <select value={questionCategory} onChange={(e) => setQuestionCategory(e.target.value)} className="w-full bg-white border border-gray-300 rounded-3xl px-6 py-4 text-black text-lg">
                   <option>Ap/Esp</option>
                   <option>Arabic</option>
                   <option>English</option>
@@ -251,19 +266,9 @@ export default function TeacherDashboard() {
                   <option>G1 & G2</option>
                 </select>
 
-                <textarea
-                  value={questionContent}
-                  onChange={(e) => setQuestionContent(e.target.value)}
-                  placeholder="Type your question here..."
-                  className="w-full h-40 bg-white border border-gray-300 rounded-3xl p-6 resize-none text-black"
-                  required
-                />
+                <textarea value={questionContent} onChange={(e) => setQuestionContent(e.target.value)} placeholder="Type your question here..." className="w-full h-40 bg-white border border-gray-300 rounded-3xl p-6 resize-none text-black" required />
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-5 rounded-3xl font-semibold text-xl transition"
-                >
+                <button type="submit" disabled={submitting} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-5 rounded-3xl font-semibold text-xl transition">
                   {submitting ? 'Posting...' : 'Post Question'}
                 </button>
               </form>
