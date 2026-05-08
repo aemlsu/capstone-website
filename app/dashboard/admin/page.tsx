@@ -7,10 +7,10 @@ import { supabaseBrowser } from '@/lib/supabase';
 export default function AdminDashboard() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'questions' | 'reflections' | 'concerns' | 'self_assessments'>('questions');
-  const [reflectionSubTab, setReflectionSubTab] = useState<'normal' | 'monthly'>('normal'); // ← NEW
+  const [reflectionSubTab, setReflectionSubTab] = useState<'normal' | 'monthly'>('normal');
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [monthFilter, setMonthFilter] = useState('All Months'); // ← NEW
+  const [monthFilter, setMonthFilter] = useState('All Months');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<{ [key: string]: string }>({});
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
@@ -24,24 +24,21 @@ export default function AdminDashboard() {
   const fetchPosts = async () => {
     const table = getTableName();
 
-    let query;
-    if (table === 'self_assessments') {
-      query = supabaseBrowser.from('self_assessments').select('*');
-    } else {
-      query = supabaseBrowser.from(table).select('*');
-    }
+    // Always start with a fresh query
+    let query = supabaseBrowser.from(table).select('*');
 
-    // Filter for Monthly Reflections
+    // Only apply Monthly Reflections filter when that sub-tab is active
     if (activeTab === 'reflections' && reflectionSubTab === 'monthly') {
-      query = query.like('title', 'Monthly%');
+      query = query.like('title', 'Monthly%');           // change to .eq('month', monthFilter) if you have a month column
       if (monthFilter !== 'All Months') {
-        query = query.eq('month', monthFilter); // remove this line if you don't have a 'month' column yet
+        query = query.eq('month', monthFilter);
       }
     }
 
     const { data } = await query
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false });
+
     setAllPosts(data || []);
   };
 
@@ -75,19 +72,10 @@ export default function AdminDashboard() {
     const table = getTableName();
     const post = allPosts.find(p => p.id === id);
     if (!post) return;
-
     const newPinned = !post.is_pinned;
-
-    const { error } = await supabaseBrowser
-      .from(table)
-      .update({ is_pinned: newPinned })
-      .eq('id', id);
-
-    if (error) {
-      alert('Failed to pin: ' + error.message);
-    } else {
-      fetchPosts();
-    }
+    const { error } = await supabaseBrowser.from(table).update({ is_pinned: newPinned }).eq('id', id);
+    if (error) alert('Failed to pin: ' + error.message);
+    else fetchPosts();
   };
 
   const handleDelete = async (id: string) => {
@@ -109,10 +97,7 @@ export default function AdminDashboard() {
   const saveEditReply = async () => {
     if (!editingReplyId) return;
     const table = getTableName();
-    const { error } = await supabaseBrowser
-      .from(table)
-      .update({ content: editReplyContent })
-      .eq('id', editingReplyId);
+    const { error } = await supabaseBrowser.from(table).update({ content: editReplyContent }).eq('id', editingReplyId);
     if (error) alert('Failed to update reply: ' + error.message);
     else {
       alert('✅ Reply updated successfully');
@@ -176,12 +161,8 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-5xl font-bold text-white drop-shadow-2xl">Admin / HoD Dashboard</h1>
           <div className="flex gap-4">
-            <button onClick={() => router.push('/resources')} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">
-              📚 Resource Library
-            </button>
-            <button onClick={() => router.push('/dashboard/teacher/toolkit')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">
-              🛠️ Transition Toolkit
-            </button>
+            <button onClick={() => router.push('/resources')} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">📚 Resource Library</button>
+            <button onClick={() => router.push('/dashboard/teacher/toolkit')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">🛠️ Transition Toolkit</button>
           </div>
         </div>
 
