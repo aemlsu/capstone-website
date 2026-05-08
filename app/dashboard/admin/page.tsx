@@ -60,6 +60,15 @@ export default function AdminDashboard() {
     return post.category === categoryFilter;
   });
 
+  // NEW: Helper to bold Q1, Q2, Q3 in monthly reflections
+  const formatContent = (content: string) => {
+    if (!content) return content;
+    return content
+      .replace(/Q1:/g, '<strong>Q1:</strong>')
+      .replace(/Q2:/g, '<strong>Q2:</strong>')
+      .replace(/Q3:/g, '<strong>Q3:</strong>');
+  };
+
   const getReplies = (parentId: string) => allPosts.filter((p) => p.parent_id === parentId);
 
   const toggleExpand = (id: string) => {
@@ -240,7 +249,7 @@ export default function AdminDashboard() {
           <button onClick={exportCSV} className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-3xl flex items-center gap-2">↓ Export Current Tab as CSV</button>
         </div>
 
-        {/* Table - only title display changed */}
+        {/* Table - only the content display was changed */}
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
           <table className="w-full">
             <thead>
@@ -291,13 +300,17 @@ export default function AdminDashboard() {
                         <td className="p-6 text-black">{post.category}</td>
                         <td className="p-6 text-black">
                           {post.is_pinned && <span className="text-amber-500 mr-2">📌</span>}
-                          {/* CHANGED: Made question title bolder + added space for Monthly Reflection */}
                           <strong className="font-bold text-black text-lg block">
                             {post.title || 'Untitled'}
                           </strong>
-                          <p className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}>
-                            {post.content}
-                          </p>
+                          <p 
+                            className={`text-gray-700 text-sm mt-1 ${isExpanded ? '' : 'line-clamp-3'}`}
+                            dangerouslySetInnerHTML={{ 
+                              __html: activeTab === 'reflections' && reflectionSubTab === 'monthly' 
+                                ? formatContent(post.content) 
+                                : post.content 
+                            }}
+                          />
                           {post.content && post.content.length > 120 && (
                             <button onClick={() => toggleExpand(post.id)} className="text-blue-600 text-xs mt-2 hover:underline flex items-center gap-1">
                               {isExpanded ? '▲ Read less' : '▼ Read more'}
@@ -372,3 +385,12 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+// Small helper to bold Q1, Q2, Q3 (only used for monthly reflections)
+const formatContent = (content: string) => {
+  if (!content) return '';
+  return content
+    .replace(/Q1:/g, '<strong>Q1:</strong>')
+    .replace(/Q2:/g, '<strong>Q2:</strong>')
+    .replace(/Q3:/g, '<strong>Q3:</strong>');
+};
