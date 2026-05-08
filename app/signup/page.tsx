@@ -8,7 +8,8 @@ import Link from 'next/link';
 export default function SignupPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'teacher' | 'school_admin'>('teacher');
-  const [subRole, setSubRole] = useState<'hod' | 'hoc' | 'school_admin'>('hod'); // only used when School Admin tab is active
+  const [subRole, setSubRole] = useState<'hod' | 'hoc' | 'school_admin'>('hod');
+  const [position, setPosition] = useState<'principal' | 'vice_principal'>('principal');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,6 +49,8 @@ export default function SignupPage() {
           full_name: fullName,
           role: finalRole,
           department: (finalRole === 'teacher' || finalRole === 'hod') ? department : null,
+          // Optional: store position for Principal/Vice Principal
+          position: finalRole === 'school_admin' ? position : null,
         },
       },
     });
@@ -55,8 +58,10 @@ export default function SignupPage() {
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      const displayRole = finalRole === 'school_admin' ? 'School Admin' : finalRole.toUpperCase();
-      alert(`✅ ${displayRole} account created successfully!`);
+      const displayName = finalRole === 'school_admin' 
+        ? `${position === 'principal' ? 'Principal' : 'Vice Principal'} (School Admin)` 
+        : finalRole.toUpperCase();
+      alert(`✅ ${displayName} account created successfully!`);
       router.push('/login');
     }
 
@@ -89,7 +94,7 @@ export default function SignupPage() {
           </button>
         </div>
 
-        {/* Dropdown only appears when School Admin tab is selected */}
+        {/* Sub-role dropdown for School Admin tab */}
         {activeTab === 'school_admin' && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Create Account As</label>
@@ -101,6 +106,21 @@ export default function SignupPage() {
               <option value="hod">HoD</option>
               <option value="hoc">HoC</option>
               <option value="school_admin">School Admin</option>
+            </select>
+          </div>
+        )}
+
+        {/* Second dropdown: Principal / Vice Principal (only when School Admin is chosen) */}
+        {activeTab === 'school_admin' && subRole === 'school_admin' && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Position</label>
+            <select
+              value={position}
+              onChange={(e) => setPosition(e.target.value as 'principal' | 'vice_principal')}
+              className="w-full border border-gray-300 rounded-3xl px-6 py-4 text-black focus:outline-none focus:border-blue-500"
+            >
+              <option value="principal">Principal</option>
+              <option value="vice_principal">Vice Principal</option>
             </select>
           </div>
         )}
@@ -143,7 +163,7 @@ export default function SignupPage() {
           {error && <p className="text-red-600 text-sm text-center">{error}</p>}
 
           <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-3xl font-semibold text-lg transition">
-            {loading ? 'Creating Account...' : `Create ${activeTab === 'school_admin' ? subRole.toUpperCase() : 'Teacher'} Account`}
+            {loading ? 'Creating Account...' : `Create ${activeTab === 'school_admin' && subRole === 'school_admin' ? position === 'principal' ? 'Principal' : 'Vice Principal' : activeTab === 'school_admin' ? subRole.toUpperCase() : 'Teacher'} Account`}
           </button>
         </form>
 
