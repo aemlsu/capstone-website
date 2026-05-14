@@ -69,7 +69,12 @@ export default function HomePage() {
             </a>
           </div>
 
-          <p className="mt-16 text-white/80 text-xl max-w-md">
+          {/* NEW NOTICE - Best viewed on laptop/PC */}
+          <div className="mt-10 flex items-center gap-2 text-white/70 text-sm">
+            💻&nbsp;&nbsp;Best experienced on a laptop or desktop computer
+          </div>
+
+          <p className="mt-12 text-white/80 text-xl max-w-md">
             Welcome to the Teacher Mentorship &amp; Collaboration Platform
           </p>
         </div>
