@@ -19,11 +19,12 @@ export default function AdminDashboard() {
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editReplyContent, setEditReplyContent] = useState('');
 
-  // NEW: Announcement form state (only these 3 lines added)
+  // Announcement form state
   const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
   const [annTitle, setAnnTitle] = useState('');
   const [annContent, setAnnContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
+  const [annError, setAnnError] = useState('');   // ← NEW: Error message
 
   const getTableName = () => activeTab === 'self_assessments' ? 'self_assessments' : activeTab;
 
@@ -173,12 +174,14 @@ export default function AdminDashboard() {
     a.click();
   };
 
-  // NEW: Post Announcement function (only this was added)
+  // Post Announcement function
   const postAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!annTitle.trim() || !annContent.trim()) return;
 
     setIsPosting(true);
+    setAnnError('');   // clear previous error
+
     const { data: { user } } = await supabaseBrowser.auth.getUser();
 
     const { error } = await supabaseBrowser
@@ -190,8 +193,9 @@ export default function AdminDashboard() {
       });
 
     if (error) {
-      alert('Failed to post announcement: ' + error.message);
+      setAnnError(error.message);
     } else {
+      setAnnError('');
       alert('✅ Announcement posted successfully!');
       setAnnTitle('');
       setAnnContent('');
@@ -206,7 +210,6 @@ export default function AdminDashboard() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-5xl font-bold text-white drop-shadow-2xl">Admin / HoD Dashboard</h1>
           <div className="flex gap-4">
-            {/* NEW: Post Announcement Button (only this line added) */}
             <button 
               onClick={() => setShowAnnouncementForm(true)}
               className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium"
@@ -426,7 +429,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* NEW: Announcement Modal (only this block was added at the end) */}
+      {/* Announcement Modal */}
       {showAnnouncementForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl p-8 max-w-lg w-full mx-4">
@@ -448,10 +451,17 @@ export default function AdminDashboard() {
                 className="w-full border border-gray-300 rounded-3xl px-6 py-4 mb-6 text-black resize-none"
                 required
               />
+
+              {/* NEW: Error message display */}
+              {annError && <p className="text-red-600 text-sm mb-4">{annError}</p>}
+
               <div className="flex gap-4">
                 <button
                   type="button"
-                  onClick={() => setShowAnnouncementForm(false)}
+                  onClick={() => {
+                    setShowAnnouncementForm(false);
+                    setAnnError('');
+                  }}
                   className="flex-1 py-4 text-gray-600 border border-gray-300 rounded-3xl"
                 >
                   Cancel
