@@ -11,9 +11,13 @@ export default function AboutPage() {
           
           <h2 className="text-4xl font-semibold text-black mb-6">Philosophy</h2>
           <p className="mb-12 text-2xl leading-relaxed">
+        The Philippine School nurtures students to be holistically developed and globally competent citizens in the service of mankind.
+          </p>
+          
+          <h2 className="text-4xl font-semibold text-black mb-6">Vision-Mission</h2>
+          <p className="mb-12 text-2xl leading-relaxed">
             The Philippine School is a leader in academic excellence and values formation that provides quality education in a multicultural learning environment.
           </p>
-
           <h2 className="text-4xl font-semibold text-black mb-8">TPS Promise Statements</h2>
 
           {/* Vision Statement 1 */}
