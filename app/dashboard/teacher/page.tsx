@@ -10,7 +10,7 @@ export default function TeacherDashboard() {
   const [userName, setUserName] = useState('Teacher');
   const [myPosts, setMyPosts] = useState<any[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
-  const [announcements, setAnnouncements] = useState<any[]>([]);   // ← added
+  const [announcements, setAnnouncements] = useState<any[]>([]);
 
   const [questionContent, setQuestionContent] = useState('');
   const [questionCategory, setQuestionCategory] = useState('Ap/Esp');
@@ -71,9 +71,8 @@ export default function TeacherDashboard() {
 
     fetchOnlineUsers();
     const interval = setInterval(fetchOnlineUsers, 30000);
-    return () => clearInterval(interval);
 
-    // ← NEW: Fetch Announcements (only this part was added)
+    // FIXED: Fetch Announcements is now in the correct place
     const fetchAnnouncements = async () => {
       const { data } = await supabaseBrowser
         .from('announcements')
@@ -84,6 +83,8 @@ export default function TeacherDashboard() {
       setAnnouncements(data || []);
     };
     fetchAnnouncements();
+
+    return () => clearInterval(interval);
   }, [router]);
 
   const handleQuickAsk = async (e: React.FormEvent) => {
@@ -132,7 +133,7 @@ export default function TeacherDashboard() {
 
       <div className="max-w-[1380px] mx-auto px-10 py-10">
 
-            {/* Announcements Section */}
+        {/* Announcements Section */}
         <div className="mb-10 bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
           <h3 className="text-2xl font-bold text-black mb-6 flex items-center gap-3">
             📢 Announcements
