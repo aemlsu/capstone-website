@@ -8,7 +8,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [school, setSchool] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);     // ← NEW
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -33,21 +33,25 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  // NEW: Upload profile picture
   const uploadAvatar = async (file: File) => {
-    if (!file) return;
+    if (!file || !profile?.id) {
+      alert('Please wait until profile loads before uploading');
+      return;
+    }
+
     setUploading(true);
 
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;
 
+    // 1. Upload to storage
     const { error: uploadError } = await supabaseBrowser.storage
       .from('avatars')
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
+      alert('Storage upload failed: ' + uploadError.message);
       setUploading(false);
       return;
     }
@@ -56,19 +60,25 @@ export default function ProfilePage() {
       .from('avatars')
       .getPublicUrl(filePath);
 
-    setAvatarUrl(publicUrl);
+    setAvatarUrl(publicUrl);   // immediate preview
 
-    // Update profile with new avatar URL
-    await supabaseBrowser
+    // 2. Update profile (this is where RLS was failing)
+    const { error: updateError } = await supabaseBrowser
       .from('profiles')
       .update({ avatar_url: publicUrl })
       .eq('id', profile.id);
 
+    if (updateError) {
+      alert('❌ Update failed: ' + updateError.message);
+    } else {
+      alert('✅ Profile picture updated successfully!');
+    }
+
     setUploading(false);
-    alert('✅ Profile picture updated!');
   };
 
   const saveProfile = async () => {
+    if (!profile?.id) return;
     setSaving(true);
     await supabaseBrowser
       .from('profiles')
@@ -83,7 +93,6 @@ export default function ProfilePage() {
       <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl p-12">
         <h1 className="text-5xl font-bold text-black mb-8">Profile</h1>
 
-        {/* NEW: Avatar Upload Section */}
         <div className="flex flex-col items-center mb-10">
           <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-gray-200 mb-4">
             {avatarUrl ? (
