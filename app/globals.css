@@ -1,18 +1,18 @@
-/* Mobile-First Responsive Fixes */
-@layer utilities {
-  .mobile-card {
-    @apply p-4 sm:p-6;
-  }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  .dashboard-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+/* Optional: Smooth scrolling and basic resets */
+@layer base {
+  html {
+    scroll-behavior: smooth;
   }
+}
 
-  .table-wrapper {
-    @apply overflow-x-auto -mx-4 sm:mx-0;
-  }
-
-  .nav-link {
-    @apply text-sm sm:text-base;
+/* Optional: Make sure Tailwind works properly with your dark/light mode if you ever use it */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
   }
 }
