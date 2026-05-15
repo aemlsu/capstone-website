@@ -264,7 +264,7 @@ export default function ResourcesPage() {
               {/* LMS / Classroom Platforms */}
               {toolsSubTab === 'lms' && (
                 <>
-                  <a href="https://genyo.com.ph" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://idiwa.com.ph/TPSUAE/login.aspx" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
                     <img src="/images/genyo.png" alt="Genyo" className="w-40 h-20 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-blue-600">Genyo</h3>
                     <p className="text-gray-600 mt-3">Philippine e-Learning platform.</p>
