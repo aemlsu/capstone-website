@@ -10,6 +10,7 @@ export default function TeacherDashboard() {
   const [userName, setUserName] = useState('Teacher');
   const [myPosts, setMyPosts] = useState<any[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);   // ← added
 
   const [questionContent, setQuestionContent] = useState('');
   const [questionCategory, setQuestionCategory] = useState('Ap/Esp');
@@ -55,7 +56,6 @@ export default function TeacherDashboard() {
     fetchMyPosts();
 
     const fetchOnlineUsers = async () => {
-      // STRICT: Only users active in the last 60 seconds
       const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000).toISOString();
 
       const { data } = await supabaseBrowser
@@ -72,6 +72,18 @@ export default function TeacherDashboard() {
     fetchOnlineUsers();
     const interval = setInterval(fetchOnlineUsers, 30000);
     return () => clearInterval(interval);
+
+    // ← NEW: Fetch Announcements (only this part was added)
+    const fetchAnnouncements = async () => {
+      const { data } = await supabaseBrowser
+        .from('announcements')
+        .select('*')
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setAnnouncements(data || []);
+    };
+    fetchAnnouncements();
   }, [router]);
 
   const handleQuickAsk = async (e: React.FormEvent) => {
@@ -119,6 +131,29 @@ export default function TeacherDashboard() {
       <div className="fixed inset-0 bg-black/40 z-[-1]" />
 
       <div className="max-w-[1380px] mx-auto px-10 py-10">
+
+        {/* ← NEW: Announcements Section (only this block was added) */}
+        {announcements.length > 0 && (
+          <div className="mb-10 bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+            <h3 className="text-2xl font-bold text-black mb-6 flex items-center gap-3">
+              📢 Announcements
+            </h3>
+            <div className="space-y-6">
+              {announcements.map((ann: any) => (
+                <div key={ann.id} className="border-l-4 border-amber-500 pl-4">
+                  {ann.is_pinned && <span className="text-amber-500 text-xs font-bold mb-1 block">📌 PINNED</span>}
+                  <h4 className="font-semibold text-black">{ann.title}</h4>
+                  <p className="text-gray-700 text-sm mt-1">{ann.content}</p>
+                  <p className="text-xs text-gray-500 mt-3">
+                    {new Date(ann.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Everything below this line is exactly your original code (unchanged) */}
         <div className="flex justify-between items-start mb-10">
           <div>
             <h1 className="text-6xl font-bold text-white drop-shadow-2xl">HELLO, {userName.toUpperCase()}!</h1>
@@ -131,7 +166,6 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="grid grid-cols-12 gap-8 items-stretch">
-          {/* ONLINE STATUS - SMALLER TEXT + STRICT 60-SECOND WINDOW */}
           <div className="col-span-2">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl h-full">
               <h4 className="font-bold text-black mb-5 text-lg">Online Status</h4>
@@ -152,7 +186,6 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* The rest of your dashboard remains the same */}
           <div className="col-span-7 grid grid-cols-4 gap-6">
             <Link href="/dashboard/teacher/ask-question" className="group">
               <div className="bg-[#f8e4c2] hover:bg-[#f5d9a8] transition rounded-3xl p-6 shadow-xl flex flex-col items-center justify-center text-center h-full">
@@ -201,7 +234,6 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Bottom section unchanged */}
         <div className="grid grid-cols-12 gap-8 mt-16">
           <div className="col-span-6 space-y-8">
             <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
