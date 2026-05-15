@@ -19,6 +19,12 @@ export default function AdminDashboard() {
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editReplyContent, setEditReplyContent] = useState('');
 
+  // NEW: Announcement form state (only these 3 lines added)
+  const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
+  const [annTitle, setAnnTitle] = useState('');
+  const [annContent, setAnnContent] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
+
   const getTableName = () => activeTab === 'self_assessments' ? 'self_assessments' : activeTab;
 
   const fetchPosts = async () => {
@@ -60,14 +66,12 @@ export default function AdminDashboard() {
     return post.category === categoryFilter;
   });
 
-  // IMPROVED: Bold Q1/Q2/Q3 + bold the actual question text + add spacing
   const formatContent = (content: string) => {
     if (!content) return '';
     return content
       .replace(/Q1:/g, '<br><br><strong>Q1:</strong>')
       .replace(/Q2:/g, '<br><br><strong>Q2:</strong>')
       .replace(/Q3:/g, '<br><br><strong>Q3:</strong>')
-      // Bold the question text itself (everything after QX: until the next Q or end)
       .replace(/<strong>Q1:<\/strong>(.*?)(?=<strong>Q2:|$)/g, '<strong>Q1:</strong> <strong>$1</strong>')
       .replace(/<strong>Q2:<\/strong>(.*?)(?=<strong>Q3:|$)/g, '<strong>Q2:</strong> <strong>$1</strong>')
       .replace(/<strong>Q3:<\/strong>(.*?)$/g, '<strong>Q3:</strong> <strong>$1</strong>');
@@ -169,12 +173,47 @@ export default function AdminDashboard() {
     a.click();
   };
 
+  // NEW: Post Announcement function (only this was added)
+  const postAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!annTitle.trim() || !annContent.trim()) return;
+
+    setIsPosting(true);
+    const { data: { user } } = await supabaseBrowser.auth.getUser();
+
+    const { error } = await supabaseBrowser
+      .from('announcements')
+      .insert({
+        title: annTitle,
+        content: annContent,
+        author_id: user?.id,
+      });
+
+    if (error) {
+      alert('Failed to post announcement: ' + error.message);
+    } else {
+      alert('✅ Announcement posted successfully!');
+      setAnnTitle('');
+      setAnnContent('');
+      setShowAnnouncementForm(false);
+    }
+    setIsPosting(false);
+  };
+
   return (
     <div className="min-h-screen relative">
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-5xl font-bold text-white drop-shadow-2xl">Admin / HoD Dashboard</h1>
           <div className="flex gap-4">
+            {/* NEW: Post Announcement Button (only this line added) */}
+            <button 
+              onClick={() => setShowAnnouncementForm(true)}
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium"
+            >
+              📢 Post Announcement
+            </button>
+
             <button onClick={() => router.push('/resources')} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">📚 Resource Library</button>
             <button onClick={() => router.push('/dashboard/teacher/toolkit')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-3xl flex items-center gap-2 text-lg font-medium">🛠️ Transition Toolkit</button>
           </div>
@@ -386,6 +425,49 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {/* NEW: Announcement Modal (only this block was added at the end) */}
+      {showAnnouncementForm && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full mx-4">
+            <h2 className="text-2xl font-bold mb-6">Post New Announcement</h2>
+            <form onSubmit={postAnnouncement}>
+              <input
+                type="text"
+                placeholder="Announcement Title"
+                value={annTitle}
+                onChange={(e) => setAnnTitle(e.target.value)}
+                className="w-full border border-gray-300 rounded-3xl px-6 py-4 mb-4 text-black"
+                required
+              />
+              <textarea
+                placeholder="Write the announcement here..."
+                value={annContent}
+                onChange={(e) => setAnnContent(e.target.value)}
+                rows={5}
+                className="w-full border border-gray-300 rounded-3xl px-6 py-4 mb-6 text-black resize-none"
+                required
+              />
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAnnouncementForm(false)}
+                  className="flex-1 py-4 text-gray-600 border border-gray-300 rounded-3xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPosting}
+                  className="flex-1 py-4 bg-amber-600 text-white rounded-3xl font-semibold"
+                >
+                  {isPosting ? 'Posting...' : 'Post Announcement'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -397,7 +479,6 @@ const formatContent = (content: string) => {
     .replace(/Q1:/g, '<br><br><strong>Q1:</strong>')
     .replace(/Q2:/g, '<br><br><strong>Q2:</strong>')
     .replace(/Q3:/g, '<br><br><strong>Q3:</strong>')
-    // Bold the entire question text as well
     .replace(/<strong>Q1:<\/strong>(.*?)(?=<strong>Q2:|$)/g, '<strong>Q1:</strong> <strong>$1</strong>')
     .replace(/<strong>Q2:<\/strong>(.*?)(?=<strong>Q3:|$)/g, '<strong>Q2:</strong> <strong>$1</strong>')
     .replace(/<strong>Q3:<\/strong>(.*?)$/g, '<strong>Q3:</strong> <strong>$1</strong>');
