@@ -23,7 +23,8 @@ export default function ResourcesPage() {
       .replace(/^_|_$/g, '')}`;
   };
 
-  // ADDED: Search bar state
+  // ADDED: Favorites feature
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const loadRole = async () => {
@@ -38,6 +39,35 @@ export default function ResourcesPage() {
     }
   };
 
+  const loadFavorites = async () => {
+    const { data: { user } } = await supabaseBrowser.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabaseBrowser
+        .from('profiles')
+        .select('favorites')
+        .eq('id', user.id)
+        .single();
+      setFavorites(profile?.favorites || []);
+    }
+  };
+
+  const toggleFavorite = async (toolName: string) => {
+    const { data: { user } } = await supabaseBrowser.auth.getUser();
+    if (!user) return;
+
+    const isFavorite = favorites.includes(toolName);
+    const newFavorites = isFavorite
+      ? favorites.filter(f => f !== toolName)
+      : [...favorites, toolName];
+
+    const { error } = await supabaseBrowser
+      .from('profiles')
+      .update({ favorites: newFavorites })
+      .eq('id', user.id);
+
+    if (!error) setFavorites(newFavorites);
+  };
+
   const fetchResources = async () => {
     const { data } = await supabaseBrowser
       .from('resources')
@@ -48,6 +78,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     loadRole();
+    loadFavorites();
     fetchResources();
   }, []);
 
@@ -158,7 +189,7 @@ export default function ResourcesPage() {
           </button>
         </div>
 
-        {/* ADDED: Search bar (exactly where you asked) */}
+        {/* Search bar */}
         <div className="mb-6">
           <input
             type="text"
@@ -209,37 +240,79 @@ export default function ResourcesPage() {
               {/* Game-Based Learning Tools */}
               {toolsSubTab === 'game' && (
                 <>
-                  <a href="https://kahoot.it" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://kahoot.it" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Kahoot!'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Kahoot!') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/kahoot.png" alt="Kahoot" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-purple-700">Kahoot!</h3>
                     <p className="text-gray-600 mt-3">Fun, interactive quizzes and live games.</p>
                   </a>
-                  <a href="https://blooket.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://blooket.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Blooket'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Blooket') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/blooket.png" alt="Blooket" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-red-600">Blooket</h3>
                     <p className="text-gray-600 mt-3">Game-based learning platform.</p>
                   </a>
-                  <a href="https://gimkit.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://gimkit.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('GimKit'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('GimKit') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/gimkit.png" alt="GimKit" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-pink-600">GimKit</h3>
                     <p className="text-gray-600 mt-3">Live learning games with money & power-ups.</p>
                   </a>
-                  <a href="https://www.mentimeter.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://www.mentimeter.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Mentimeter'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Mentimeter') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/mentimeter.png" alt="Mentimeter" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Mentimeter</h3>
                     <p className="text-gray-600 mt-3">Interactive presentations and polls.</p>
                   </a>
-                  <a href="https://wordwall.net" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://wordwall.net" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Wordwall'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Wordwall') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/wordwall.png" alt="Wordwall" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Wordwall</h3>
                     <p className="text-gray-600 mt-3">Interactive games and activities.</p>
                   </a>
-                  <a href="https://bamboozle.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://bamboozle.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Bamboozle'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Bamboozle') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/bamboozle.png" alt="Bamboozle" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Bamboozle</h3>
                     <p className="text-gray-600 mt-3">Fun review games.</p>
                   </a>
-                  <a href="https://padlet.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://padlet.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Padlet'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Padlet') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/padlet.png" alt="Padlet" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Padlet</h3>
                     <p className="text-gray-600 mt-3">Collaborative digital bulletin boards.</p>
@@ -250,37 +323,79 @@ export default function ResourcesPage() {
               {/* AI Tools for Teachers */}
               {toolsSubTab === 'ai' && (
                 <>
-                  <a href="https://grok.x.ai" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://grok.x.ai" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Grok'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Grok') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/grok.png" alt="Grok" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Grok</h3>
                     <p className="text-gray-600 mt-3">xAI's helpful AI assistant.</p>
                   </a>
-                  <a href="https://chatgpt.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://chatgpt.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('ChatGPT'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('ChatGPT') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/chatgpt.png" alt="ChatGPT" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-green-600">ChatGPT</h3>
                     <p className="text-gray-600 mt-3">OpenAI's powerful conversational AI.</p>
                   </a>
-                  <a href="https://gemini.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://gemini.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Gemini'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Gemini') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/gemini.png" alt="Gemini" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-blue-600">Gemini</h3>
                     <p className="text-gray-600 mt-3">Google's multimodal AI.</p>
                   </a>
-                  <a href="https://notebooklm.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://notebooklm.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('NotebookLM'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('NotebookLM') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/notebooklm.png" alt="NotebookLM" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-indigo-600">NotebookLM</h3>
                     <p className="text-gray-600 mt-3">Turn notes into podcasts & summaries.</p>
                   </a>
-                  <a href="https://copilot.microsoft.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://copilot.microsoft.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Copilot'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Copilot') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/copilot.png" alt="Copilot" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Copilot</h3>
                     <p className="text-gray-600 mt-3">Microsoft's AI assistant.</p>
                   </a>
-                  <a href="https://www.perplexity.ai" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://www.perplexity.ai" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Perplexity'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Perplexity') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/perplexity.png" alt="Perplexity" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Perplexity</h3>
                     <p className="text-gray-600 mt-3">AI-powered research & answers.</p>
                   </a>
-                  <a href="https://tome.app" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://tome.app" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Tome'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Tome') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/tome.png" alt="Tome" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-3xl font-bold">Tome</h3>
                     <p className="text-gray-600 mt-3">AI presentation generator.</p>
@@ -291,47 +406,101 @@ export default function ResourcesPage() {
               {/* LMS / Classroom Platforms */}
               {toolsSubTab === 'lms' && (
                 <>
-                  <a href="https://idiwa.com.ph/TPSUAE/login.aspx" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://idiwa.com.ph/TPSUAE/login.aspx" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Genyo'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Genyo') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/genyo.png" alt="Genyo" className="w-40 h-20 object-contain mb-6" />
                     <h3 className="text-3xl font-bold text-blue-600">Genyo</h3>
                     <p className="text-gray-600 mt-3">Philippine e-Learning platform.</p>
                   </a>
-                  <a href="https://classroom.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://classroom.google.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Google Classroom'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Google Classroom') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/google-classroom.png" alt="Google Classroom" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">Google Classroom</h3>
                     <p className="text-black mt-3">Classroom management & assignments.</p>
                   </a>
-                  <a href="https://padlet.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://padlet.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Padlet'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Padlet') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/padlet.png" alt="Padlet" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">Padlet</h3>
                     <p className="text-gray-600 mt-3">Collaborative digital bulletin boards.</p>
                   </a>
-                  <a href="https://scratch.mit.edu" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://scratch.mit.edu" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Scratch'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Scratch') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/scratch.png" alt="Scratch" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">Scratch</h3>
                     <p className="text-gray-600 mt-3">Block-based programming for students.</p>
                   </a>
-                  <a href="https://www.geogebra.org" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://www.geogebra.org" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('GeoGebra'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('GeoGebra') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/geogebra.png" alt="GeoGebra" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">GeoGebra</h3>
                     <p className="text-gray-600 mt-3">Interactive math & science tools.</p>
                   </a>
-                  <a href="https://phet.colorado.edu" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://phet.colorado.edu" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('PhET Simulations'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('PhET Simulations') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/phet.png" alt="PhET" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">PhET Simulations</h3>
                     <p className="text-gray-600 mt-3">Free science simulations.</p>
                   </a>
-                  <a href="https://ascend-lms-three.vercel.app" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://ascend-lms-three.vercel.app" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('Ascend'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('Ascend') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/Ascend.png" alt="Ascend" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">Ascend</h3>
                     <p className="text-gray-600 mt-3">Modern LMS for personalized learning.</p>
                   </a>
-                  <a href="https://www.i-ready.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://www.i-ready.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('i-Ready'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('i-Ready') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/IReady.png" alt="i-Ready" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">i-Ready</h3>
                     <p className="text-gray-600 mt-3">Adaptive diagnostic and personalized instruction.</p>
                   </a>
-                  <a href="https://www.codemonkey.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center">
+                  <a href="https://www.codemonkey.com" target="_blank" className="group bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl p-8 hover:shadow-2xl transition flex flex-col items-center text-center relative">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite('CodeMonkey'); }}
+                      className="absolute top-4 right-4 text-3xl transition"
+                    >
+                      {favorites.includes('CodeMonkey') ? '❤️' : '♡'}
+                    </button>
                     <img src="/images/Codemonkey.png" alt="CodeMonkey" className="w-28 h-28 object-contain mb-6" />
                     <h3 className="text-black font-bold">CodeMonkey</h3>
                     <p className="text-gray-600 mt-3">Fun coding games and programming for students.</p>
