@@ -21,7 +21,10 @@ export default function AskQuestionPage() {
   const fetchQuestions = async () => {
     const { data } = await supabaseBrowser
       .from('questions')
-      .select('*')
+      .select(`
+        *,
+        author:profiles!author_id (full_name)
+      `)
       .order('created_at', { ascending: false });
     setAllPosts(data || []);
   };
@@ -30,7 +33,6 @@ export default function AskQuestionPage() {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabaseBrowser.auth.getUser();
       setCurrentUserId(user?.id || null);
-      console.log('Current User ID:', user?.id);   // ← Debug log
     };
     getCurrentUser();
     fetchQuestions();
@@ -126,7 +128,7 @@ export default function AskQuestionPage() {
       <div className="max-w-4xl mx-auto px-8 py-8">
         <h1 className="text-5xl font-bold text-white drop-shadow-2xl mb-8">Recent Questions</h1>
 
-        {/* Post new question form */}
+        {/* Post new question form - unchanged */}
         <form onSubmit={handlePostQuestion} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl mb-12">
           <input
             type="text"
@@ -176,6 +178,7 @@ export default function AskQuestionPage() {
               const replies = getReplies(q.id);
               const isOwnPost = currentUserId && q.author_id === currentUserId;
               const isEditing = editingId === q.id;
+              const authorName = q.author?.full_name || 'Unknown';
 
               return (
                 <div key={q.id} className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
@@ -231,20 +234,25 @@ export default function AskQuestionPage() {
                       </div>
                       <p className="text-gray-900 mt-3 text-[17px]">{q.content}</p>
                       <p className="text-xs text-gray-500 mt-6">
-                        Posted in <span className="font-medium">{q.category}</span>
+                        Posted by <span className="font-medium">{authorName}</span> • {q.category}
                       </p>
                     </>
                   )}
 
-                  {/* Replies */}
+                  {/* Replies - now shows who replied */}
                   {replies.length > 0 && (
                     <div className="mt-10 space-y-6">
-                      {replies.map((reply) => (
-                        <div key={reply.id} className="pl-8 border-l-4 border-blue-200">
-                          <p className="text-gray-600 text-sm">↳ Reply from HoD/Admin</p>
-                          <p className="text-gray-800 mt-1">{reply.content}</p>
-                        </div>
-                      ))}
+                      {replies.map((reply) => {
+                        const replyAuthor = reply.author?.full_name || 'HoD/Admin';
+                        return (
+                          <div key={reply.id} className="pl-8 border-l-4 border-blue-200">
+                            <p className="text-gray-600 text-sm">
+                              ↳ Reply from <span className="font-medium">{replyAuthor}</span>
+                            </p>
+                            <p className="text-gray-800 mt-1">{reply.content}</p>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
