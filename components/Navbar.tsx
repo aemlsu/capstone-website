@@ -9,6 +9,7 @@ export default function Navbar() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);   // ← NEW
   const [homePath, setHomePath] = useState('/dashboard/teacher');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -20,12 +21,13 @@ export default function Navbar() {
         setIsLoggedIn(true);
         const { data: profile } = await supabaseBrowser
           .from('profiles')
-          .select('full_name, role')
+          .select('full_name, role, avatar_url')   // ← added avatar_url
           .eq('id', user.id)
           .single();
 
         if (profile) {
           setUserName(profile.full_name || 'User');
+          setAvatarUrl(profile.avatar_url || null);   // ← NEW
           setHomePath(profile.role === 'teacher' ? '/dashboard/teacher' : '/dashboard/admin');
         }
       } else {
@@ -64,7 +66,14 @@ export default function Navbar() {
           {isLoggedIn ? (
             <div className="relative">
               <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-3 hover:bg-gray-100 px-4 py-2 rounded-3xl transition">
-                <div className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full text-lg">👤</div>
+                {/* REAL AVATAR */}
+                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-blue-600 text-white flex items-center justify-center text-lg">👤</div>
+                  )}
+                </div>
                 <span className="font-medium text-black hidden sm:inline">{userName}</span>
               </button>
 
