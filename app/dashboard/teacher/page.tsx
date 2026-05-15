@@ -132,14 +132,14 @@ export default function TeacherDashboard() {
 
       <div className="max-w-[1380px] mx-auto px-10 py-10">
 
-        {/* ← NEW: Announcements Section (only this block was added) */}
-        {announcements.length > 0 && (
-          <div className="mb-10 bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
-            <h3 className="text-2xl font-bold text-black mb-6 flex items-center gap-3">
-              📢 Announcements
-            </h3>
-            <div className="space-y-6">
-              {announcements.map((ann: any) => (
+            {/* Announcements Section */}
+        <div className="mb-10 bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+          <h3 className="text-2xl font-bold text-black mb-6 flex items-center gap-3">
+            📢 Announcements
+          </h3>
+          <div className="space-y-6">
+            {announcements.length > 0 ? (
+              announcements.map((ann: any) => (
                 <div key={ann.id} className="border-l-4 border-amber-500 pl-4">
                   {ann.is_pinned && <span className="text-amber-500 text-xs font-bold mb-1 block">📌 PINNED</span>}
                   <h4 className="font-semibold text-black">{ann.title}</h4>
@@ -148,10 +148,12 @@ export default function TeacherDashboard() {
                     {new Date(ann.created_at).toLocaleDateString()}
                   </p>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-8">No announcements yet</p>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Everything below this line is exactly your original code (unchanged) */}
         <div className="flex justify-between items-start mb-10">
