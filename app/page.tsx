@@ -93,7 +93,7 @@ export default function HomePage() {
               <iframe
                 width="100%"
                 height="640"
-                src="https://www.youtube.com/embed/_EI3gAUTfQk"
+                src="https://www.youtube.com/embed/4d_YLR7OSxo"
                 title="TPS EduShift Support Tutorial"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
